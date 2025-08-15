@@ -53,8 +53,18 @@ export default function LandingPage() {
                         </span>
                     </div>
                     <div className="flex items-center space-x-3">
-                        <Link to="/"><Button variant="ghost" size="md">Login</Button></Link>
-                        <Link to="/"><Button variant="primary" size="md" className="bg-gradient-to-r from-[#4F91FF] to-[#38B2AC] text-white">Get Started</Button></Link>
+                        <Link to="/signin">
+                            <Button variant="ghost" size="md">Login</Button>
+                        </Link>
+                        <Link to="/signup">
+                            <Button
+                                variant="primary"
+                                size="md"
+                                className="bg-gradient-to-r from-[#4F91FF] to-[#38B2AC] text-white"
+                            >
+                                Sign up
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </nav>
@@ -75,8 +85,11 @@ export default function LandingPage() {
                     <p className="text-lg text-[#A0AEC0]">
                         Connecting innovative founders with visionary investors. The perfect match to build the future — together.
                     </p>
-                    <Link to="/">
-                        <Button size="lg" className="bg-gradient-to-r from-[#4F91FF] to-[#38B2AC] text-white px-6 py-3">
+                    <Link to="/signup">
+                        <Button
+                            size="lg"
+                            className="bg-gradient-to-r from-[#4F91FF] to-[#38B2AC] text-white px-6 py-3"
+                        >
                             Start Your Journey <ArrowRight className="w-5 h-5" />
                         </Button>
                     </Link>
