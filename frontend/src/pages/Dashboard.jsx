@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { apiGet, apiPost } from "../utils/api";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
@@ -7,21 +6,20 @@ export default function Dashboard() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        async function fetchUser() {
-            const res = await apiGet("/check-auth/");
-            if (!res.authenticated) {
-                localStorage.removeItem("isAuthenticated");
-                navigate("/signin");
-            } else {
-                setUser(res.username);
-            }
+        const isAuth = localStorage.getItem("isAuthenticated");
+        const storedUser = localStorage.getItem("username");
+
+        if (!isAuth) {
+            navigate("/signin");
+        } else {
+            setUser(storedUser || "User");
         }
-        fetchUser();
     }, [navigate]);
 
-    async function handleLogout() {
-        await apiPost("/signout/", {});
+    function handleLogout() {
         localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("username");
+        localStorage.removeItem("role");
         navigate("/signin");
     }
 

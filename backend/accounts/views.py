@@ -1,16 +1,16 @@
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .models import Profile
+from django.contrib.auth.hashers import make_password, check_password
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):
     username = request.data.get('username')
     password = request.data.get('password')
-    role = request.data.get('role')  # get role from frontend
+    role = request.data.get('role')
 
     if not username or not password or not role:
         return Response({"error": "Username, password, and role are required"}, status=400)
@@ -18,10 +18,14 @@ def signup(request):
     if User.objects.filter(username=username).exists():
         return Response({"error": "Username already exists"}, status=400)
 
-    user = User.objects.create_user(username=username, password=password)
+    user = User.objects.create(
+        username=username,
+        password=make_password(password)
+    )
     Profile.objects.create(user=user, role=role)
 
     return Response({"message": "User created successfully"})
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -29,27 +33,34 @@ def signin(request):
     username = request.data.get('username')
     password = request.data.get('password')
 
-    user = authenticate(username=username, password=password)
-    if user is None:
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
         return Response({"error": "Invalid credentials"}, status=400)
 
-    login(request, user)  # Creates session
+    if not check_password(password, user.password):
+        return Response({"error": "Invalid credentials"}, status=400)
+
     return Response({
         "message": "Login successful",
-        "role": user.profile.role  # return role for frontend use
+        "username": user.username,
+        "role": user.profile.role
     })
 
-@api_view(['POST'])
-def signout(request):
-    logout(request)
-    return Response({"message": "Logged out successfully"})
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def check_auth(request):
-    if request.user.is_authenticated:
-        return Response({
-            "authenticated": True,
-            "username": request.user.username,
-            "role": request.user.profile.role
-        })
-    return Response({"authenticated": False})
+    username = request.query_params.get("username")
+    if not username:
+        return Response({"authenticated": False})
+
+    exists = User.objects.filter(username=username).exists()
+    return Response({"authenticated": exists})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def signout(request):
+    # Nothing to do here since no sessions are stored
+    return Response({"message": "Logged out successfully"})

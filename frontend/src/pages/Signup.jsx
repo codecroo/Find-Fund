@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { apiPost } from "../utils/api";
+import api from "../utils/api"
 import { ArrowLeft } from "lucide-react";
 
 export default function Signup() {
@@ -11,11 +11,16 @@ export default function Signup() {
 
     async function handleSubmit(e) {
         e.preventDefault();
-        const res = await apiPost("/signup/", { username, password, role });
-        if (res.message) {
-            navigate("/signin");
-        } else {
-            alert(res.error || "Signup failed");
+        try {
+            const res = await api.post("signup/", { username, password, role });
+            if (res.data.message) {
+                navigate("/signin");
+            } else {
+                alert(res.data.error || "Signup failed");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("An error occurred while signing up");
         }
     }
 

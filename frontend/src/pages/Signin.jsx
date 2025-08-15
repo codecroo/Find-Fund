@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { apiPost } from "../utils/api";
+import api from "../utils/api";
 import { ArrowLeft } from "lucide-react";
 
 export default function Signin() {
@@ -10,14 +10,17 @@ export default function Signin() {
 
     async function handleSubmit(e) {
         e.preventDefault();
-        const res = await apiPost("/signin/", { username, password });
-        if (res.message) {
-            localStorage.setItem("isAuthenticated", "true");
-            localStorage.setItem("role", res.role);
-            navigate("/dashboard");
-        }
-        else {
-            alert(res.error || "Invalid credentials");
+        try {
+            const res = await api.post("signin/", { username, password });
+            if (res.data.message) {
+                localStorage.setItem("isAuthenticated", "true");
+                navigate("/dashboard");
+            } else {
+                alert(res.data.error || "Invalid credentials");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("An error occurred while signing in");
         }
     }
 

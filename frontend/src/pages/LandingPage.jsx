@@ -40,7 +40,6 @@ export default function LandingPage() {
 
     return (
         <div className="min-h-screen bg-[#0E1525] text-[#E4E9F2] font-sans">
-
             {/* NAVBAR */}
             <nav className="fixed top-0 w-full z-50 bg-[#0E1525]/80 backdrop-blur-md border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
