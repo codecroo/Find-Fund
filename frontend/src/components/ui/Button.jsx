@@ -15,7 +15,7 @@ const Button = ({
 
   const variants = {
     primary:
-      "bg-gradient-to-r from-purple-500 to-blue-500 text-white border border-purple-400/50 hover:from-purple-600 hover:to-blue-600 hover:shadow-xl focus:ring-purple-400",
+      "bg-gradient-to-r from-purple-800 to-blue-900 text-white border border-purple-400/50 hover:shadow-xl focus:ring-purple-400",
     secondary:
       "bg-gray-700/80 text-white border border-gray-500 hover:bg-gray-600 hover:shadow-md focus:ring-gray-400",
     danger:

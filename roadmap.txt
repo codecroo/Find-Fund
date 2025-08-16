@@ -1,0 +1,31 @@
+####Founderss
+
+Dashboard / Overview → quick glance at funding progress, applications.
+
+Pitch Deck / Profile → upload & edit company profile, pitch, documents.
+
+Funding Requests → create/manage funding requests.
+
+Investor Messages / Chat → direct communication.
+
+Opportunities → list of investors who might be interested.
+
+Settings → profile & company settings.
+
+Logout.
+
+###investors
+
+Dashboard / Portfolio → overview of investments, interests.
+
+Browse Startups / Opportunities → list of founders/projects.
+
+Saved / Interested Startups → shortlist to track later.
+
+Investment Requests → incoming pitches from founders.
+
+Messages / Chat → talk directly with founders.
+
+Settings → account preferences.
+
+Logout.
