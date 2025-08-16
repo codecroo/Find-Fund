@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import { ArrowLeft } from "lucide-react";
@@ -6,21 +6,45 @@ import { ArrowLeft } from "lucide-react";
 export default function Signin() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    // Ref for Enter navigation
+    const passwordRef = useRef(null);
+
+    function validateForm() {
+        const newErrors = {};
+        if (!username.trim()) newErrors.username = "Username is required";
+        if (!password) newErrors.password = "Password is required";
+        return newErrors;
+    }
 
     async function handleSubmit(e) {
         e.preventDefault();
+        const formErrors = validateForm();
+
+        if (Object.keys(formErrors).length > 0) {
+            setErrors(formErrors);
+            return;
+        }
+
+        setErrors({});
+        setLoading(true);
+
         try {
             const res = await api.post("signin/", { username, password });
             if (res.data.message) {
                 localStorage.setItem("isAuthenticated", "true");
                 navigate("/dashboard");
             } else {
-                alert(res.data.error || "Invalid credentials");
+                setErrors({ general: res.data.error || "Invalid credentials" });
             }
         } catch (error) {
             console.error(error);
-            alert("An error occurred while signing in");
+            setErrors({ general: "An error occurred while signing in" });
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -39,24 +63,46 @@ export default function Signin() {
             >
                 <h2 className="text-3xl font-bold mb-6 text-center">Sign In</h2>
 
+                {errors.general && (
+                    <div className="mb-4 text-red-400 text-sm text-center">{errors.general}</div>
+                )}
+
+                {/* Username */}
                 <input
-                    className="w-full p-3 mb-4 bg-[#0E1525] rounded-lg border border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    autoFocus
+                    className={`w-full p-3 mb-2 bg-[#0E1525] rounded-lg border ${errors.username ? "border-red-500" : "border-white/10"
+                        } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                     placeholder="Username"
                     value={username}
-                    onChange={e => setUsername(e.target.value)}
+                    onChange={(e) => setUsername(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            passwordRef.current?.focus();
+                        }
+                    }}
                 />
+                {errors.username && <p className="text-red-400 text-sm mb-2">{errors.username}</p>}
+
+                {/* Password */}
                 <input
-                    className="w-full p-3 mb-6 bg-[#0E1525] rounded-lg border border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    ref={passwordRef}
+                    className={`w-full p-3 mb-2 bg-[#0E1525] rounded-lg border ${errors.password ? "border-red-500" : "border-white/10"
+                        } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                     placeholder="Password"
                     type="password"
                     value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                 />
+                {errors.password && <p className="text-red-400 text-sm mb-2">{errors.password}</p>}
 
                 <button
-                    className="w-full bg-gradient-to-r from-indigo-500 to-teal-400 p-3 rounded-lg font-semibold hover:opacity-90 transition"
+                    type="submit"
+                    disabled={loading}
+                    className={`w-full bg-gradient-to-r from-indigo-500 to-teal-400 p-3 rounded-lg font-semibold transition ${loading ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"
+                        }`}
                 >
-                    Login
+                    {loading ? "Signing In..." : "Login"}
                 </button>
 
                 <p className="text-sm text-center mt-6 text-gray-400">
