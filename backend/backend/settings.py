@@ -44,7 +44,12 @@ INSTALLED_APPS = [
 
     #apps
     'accounts',
+    'startups',
 ]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -64,17 +69,27 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
+        "rest_framework.authentication.BasicAuthentication",
+
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
 
-# Allow frontend requests
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
+# # Allow frontend requests
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # your React app
+]
+CSRF_COOKIE_HTTPONLY = False  # allow JS to read it
+
+
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173"]
+
+# SESSION_COOKIE_SAMESITE = "None"  # important if React and Django are on different ports
+# CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:8000"]
+
 
 ROOT_URLCONF = 'backend.urls'
 

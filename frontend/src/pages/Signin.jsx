@@ -1,13 +1,15 @@
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 export default function Signin() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
     const navigate = useNavigate();
 
     // Ref for Enter navigation
@@ -33,15 +35,13 @@ export default function Signin() {
         setLoading(true);
 
         try {
-            const res = await api.post("signin/", { username, password });
+            const res = await api.post("signin/", { username, password }, { withCredentials: true });
 
             if (res.data.message) {
-                // ✅ Save auth state + role
                 localStorage.setItem("isAuthenticated", "true");
                 localStorage.setItem("username", res.data.username);
                 localStorage.setItem("role", res.data.role);
 
-                // ✅ Redirect user based on role
                 if (res.data.role === "Founder") {
                     navigate("/dashboard/founder");
                 } else if (res.data.role === "Investor") {
@@ -96,16 +96,25 @@ export default function Signin() {
                 />
                 {errors.username && <p className="text-red-400 text-sm mb-2">{errors.username}</p>}
 
-                {/* Password */}
-                <input
-                    ref={passwordRef}
-                    className={`w-full p-3 mb-2 bg-[#0E1525] rounded-lg border ${errors.password ? "border-red-500" : "border-white/10"
-                        } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-                    placeholder="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
+                {/* Password with toggle */}
+                <div className="relative mb-2">
+                    <input
+                        ref={passwordRef}
+                        className={`w-full p-3 pr-10 bg-[#0E1525] rounded-lg border ${errors.password ? "border-red-500" : "border-white/10"
+                            } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                        placeholder="Password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                </div>
                 {errors.password && <p className="text-red-400 text-sm mb-2">{errors.password}</p>}
 
                 <button

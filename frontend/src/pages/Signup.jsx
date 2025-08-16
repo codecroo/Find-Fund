@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 export default function Signup() {
     const [username, setUsername] = useState("");
@@ -10,6 +10,10 @@ export default function Signup() {
     const [role, setRole] = useState("Founder");
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
     const navigate = useNavigate();
 
     // Refs for Enter navigation
@@ -40,9 +44,9 @@ export default function Signup() {
         try {
             const res = await api.post("signup/", {
                 username,
-                password1: password,   // ✅ Django expects this
-                password2: confirmPassword, // ✅ Django expects this
-                role
+                password1: password,
+                password2: confirmPassword,
+                role,
             });
 
             if (res.data.message) {
@@ -53,7 +57,6 @@ export default function Signup() {
         } catch (error) {
             console.error(error);
             if (error.response?.data?.error) {
-                // Django form errors come as dict
                 setErrors({ general: JSON.stringify(error.response.data.error) });
             } else {
                 setErrors({ general: "An error occurred while signing up" });
@@ -107,41 +110,59 @@ export default function Signup() {
                 )}
 
                 {/* Password */}
-                <input
-                    ref={passwordRef}
-                    className={`w-full p-3 mb-2 bg-[#0E1525] rounded-lg border ${errors.password ? "border-red-500" : "border-white/10"
-                        } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-                    placeholder="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            e.preventDefault();
-                            confirmPasswordRef.current?.focus();
-                        }
-                    }}
-                />
+                <div className="relative mb-2">
+                    <input
+                        ref={passwordRef}
+                        className={`w-full p-3 pr-10 bg-[#0E1525] rounded-lg border ${errors.password ? "border-red-500" : "border-white/10"
+                            } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                        placeholder="Password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault();
+                                confirmPasswordRef.current?.focus();
+                            }
+                        }}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                </div>
                 {errors.password && (
                     <p className="text-red-400 text-sm mb-2">{errors.password}</p>
                 )}
 
                 {/* Confirm Password */}
-                <input
-                    ref={confirmPasswordRef}
-                    className={`w-full p-3 mb-2 bg-[#0E1525] rounded-lg border ${errors.confirmPassword ? "border-red-500" : "border-white/10"
-                        } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-                    placeholder="Confirm Password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            e.preventDefault();
-                            roleRef.current?.focus();
-                        }
-                    }}
-                />
+                <div className="relative mb-2">
+                    <input
+                        ref={confirmPasswordRef}
+                        className={`w-full p-3 pr-10 bg-[#0E1525] rounded-lg border ${errors.confirmPassword ? "border-red-500" : "border-white/10"
+                            } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                        placeholder="Confirm Password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault();
+                                roleRef.current?.focus();
+                            }
+                        }}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                </div>
                 {errors.confirmPassword && (
                     <p className="text-red-400 text-sm mb-2">{errors.confirmPassword}</p>
                 )}
