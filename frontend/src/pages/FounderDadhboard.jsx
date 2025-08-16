@@ -29,13 +29,16 @@ export default function FounderDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-900 text-white flex">
+            {/* Sidebar (desktop + mobile handled inside) */}
             <Sidebar role={role} onLogout={handleLogout} />
-            <main className="flex-1 p-10">
+
+            {/* Main Content */}
+            <main className="flex-1 md:ml-0 p-6 md:p-10 overflow-y-auto">
                 <h1 className="text-3xl font-bold mb-4">Welcome, {user}</h1>
                 <p className="text-gray-400 mb-6">
                     You are logged in as <span className="text-indigo-400">{role}</span>.
                 </p>
-                <div className="bg-gray-700 p-6 rounded-lg shadow">
+                <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
                     <h2 className="text-xl font-semibold mb-2">Founder Dashboard</h2>
                     <p>Manage your startups and track funding requests here.</p>
                 </div>
