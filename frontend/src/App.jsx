@@ -4,6 +4,8 @@ import Signup from "./pages/Signup";
 import PrivateRoute from "./components/PrivateRoute";
 import Dashboard from "./pages/Dashboard";
 import LandingPage from "./pages/LandingPage";
+import FounderDashboard from "./pages/FounderDadhboard";
+import InvestorDashboard from "./pages/InvestorDashboard";
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
         <Route path="/signin" element={<Signin />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/dashboard/founder" element={<PrivateRoute><FounderDashboard /></PrivateRoute>} />
+        <Route path="/dashboard/investor" element={<PrivateRoute> <InvestorDashboard /></PrivateRoute>} />
       </Routes>
     </Router>
   );

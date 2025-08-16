@@ -19,7 +19,6 @@ export default function Dashboard() {
     function handleLogout() {
         localStorage.removeItem("isAuthenticated");
         localStorage.removeItem("username");
-        localStorage.removeItem("role");
         navigate("/signin");
     }
 

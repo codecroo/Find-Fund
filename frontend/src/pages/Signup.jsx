@@ -20,8 +20,8 @@ export default function Signup() {
     function validateForm() {
         const newErrors = {};
         if (!username.trim()) newErrors.username = "Username is required";
-        if (password.length < 6) newErrors.password = "Password must be at least 6 characters";
-        if (confirmPassword !== password) newErrors.confirmPassword = "Passwords do not match";
+        if (password !== confirmPassword)
+            newErrors.confirmPassword = "Passwords do not match";
         return newErrors;
     }
 
@@ -38,7 +38,13 @@ export default function Signup() {
         setLoading(true);
 
         try {
-            const res = await api.post("signup/", { username, password, role });
+            const res = await api.post("signup/", {
+                username,
+                password1: password,   // ✅ Django expects this
+                password2: confirmPassword, // ✅ Django expects this
+                role
+            });
+
             if (res.data.message) {
                 navigate("/signin");
             } else {
@@ -46,7 +52,12 @@ export default function Signup() {
             }
         } catch (error) {
             console.error(error);
-            setErrors({ general: "An error occurred while signing up" });
+            if (error.response?.data?.error) {
+                // Django form errors come as dict
+                setErrors({ general: JSON.stringify(error.response.data.error) });
+            } else {
+                setErrors({ general: "An error occurred while signing up" });
+            }
         } finally {
             setLoading(false);
         }
@@ -56,7 +67,10 @@ export default function Signup() {
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#0E1525] text-white px-4">
             {/* Back to Home */}
             <div className="absolute top-6 left-6">
-                <Link to="/" className="flex items-center text-sm text-indigo-400 hover:underline">
+                <Link
+                    to="/"
+                    className="flex items-center text-sm text-indigo-400 hover:underline"
+                >
                     <ArrowLeft size={16} className="mr-1" /> Back to Home
                 </Link>
             </div>
@@ -68,7 +82,9 @@ export default function Signup() {
                 <h2 className="text-3xl font-bold mb-6 text-center">Create Account</h2>
 
                 {errors.general && (
-                    <div className="mb-4 text-red-400 text-sm text-center">{errors.general}</div>
+                    <div className="mb-4 text-red-400 text-sm text-center">
+                        {errors.general}
+                    </div>
                 )}
 
                 {/* Username */}
@@ -86,7 +102,9 @@ export default function Signup() {
                         }
                     }}
                 />
-                {errors.username && <p className="text-red-400 text-sm mb-2">{errors.username}</p>}
+                {errors.username && (
+                    <p className="text-red-400 text-sm mb-2">{errors.username}</p>
+                )}
 
                 {/* Password */}
                 <input
@@ -104,7 +122,9 @@ export default function Signup() {
                         }
                     }}
                 />
-                {errors.password && <p className="text-red-400 text-sm mb-2">{errors.password}</p>}
+                {errors.password && (
+                    <p className="text-red-400 text-sm mb-2">{errors.password}</p>
+                )}
 
                 {/* Confirm Password */}
                 <input

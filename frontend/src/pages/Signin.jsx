@@ -34,9 +34,21 @@ export default function Signin() {
 
         try {
             const res = await api.post("signin/", { username, password });
+
             if (res.data.message) {
+                // ✅ Save auth state + role
                 localStorage.setItem("isAuthenticated", "true");
-                navigate("/dashboard");
+                localStorage.setItem("username", res.data.username);
+                localStorage.setItem("role", res.data.role);
+
+                // ✅ Redirect user based on role
+                if (res.data.role === "Founder") {
+                    navigate("/dashboard/founder");
+                } else if (res.data.role === "Investor") {
+                    navigate("/dashboard/investor");
+                } else {
+                    navigate("/dashboard"); // fallback
+                }
             } else {
                 setErrors({ general: res.data.error || "Invalid credentials" });
             }
