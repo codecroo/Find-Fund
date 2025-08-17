@@ -58,7 +58,6 @@ def signin(request):
         "role": getattr(user.profile, "role", None)
     })
 
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def check_auth(request):

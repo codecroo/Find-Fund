@@ -32,7 +32,7 @@ function App() {
         <Route
           path="/dashboard/founder"
           element={
-            <PrivateRoute>
+            <PrivateRoute allowedRoles={["Founder"]}>
               <FounderDashboard />
             </PrivateRoute>
           }
@@ -40,7 +40,7 @@ function App() {
         <Route
           path="/dashboard/founder/startups"
           element={
-            <PrivateRoute>
+            <PrivateRoute allowedRoles={["Founder"]}>
               <FounderStartups />
             </PrivateRoute>
           }
@@ -48,24 +48,24 @@ function App() {
         {/* <Route
           path="/dashboard/founder/funding"
           element={
-            <PrivateRoute>
-              <FounderFunding />
+            <PrivateRoute allowedRoles={["Founder"]}>
+            <FounderFunding />
             </PrivateRoute>
           }
         />
         <Route
           path="/dashboard/founder/messages"
           element={
-            <PrivateRoute>
-              <FounderMessages />
+            <PrivateRoute allowedRoles={["Founder"]}>
+            <FounderMessages />
             </PrivateRoute>
           }
         />
         <Route
           path="/dashboard/founder/profile"
           element={
-            <PrivateRoute>
-              <FounderProfile />
+            <PrivateRoute allowedRoles={["founder"]}>
+            <FounderProfile />
             </PrivateRoute>
           }
         /> */}
@@ -74,7 +74,7 @@ function App() {
         <Route
           path="/dashboard/investor"
           element={
-            <PrivateRoute>
+            <PrivateRoute allowedRoles={["Investor"]}>
               <InvestorDashboard />
             </PrivateRoute>
           }
@@ -82,40 +82,40 @@ function App() {
         {/* <Route
           path="/dashboard/investor/startups"
           element={
-            <PrivateRoute>
-              <InvestorBrowse />
+            <PrivateRoute allowedRoles={["Investor"]}>
+            <InvestorBrowse />
             </PrivateRoute>
           }
         />
         <Route
           path="/dashboard/investor/saved"
           element={
-            <PrivateRoute>
-              <InvestorSaved />
+            <PrivateRoute allowedRoles={["Investor"]}>
+            <InvestorSaved />
             </PrivateRoute>
           }
         />
         <Route
           path="/dashboard/investor/investments"
           element={
-            <PrivateRoute>
-              <InvestorInvestments />
+            <PrivateRoute allowedRoles={["Investor"]}>
+            <InvestorInvestments />
             </PrivateRoute>
           }
         />
         <Route
           path="/dashboard/investor/messages"
           element={
-            <PrivateRoute>
-              <InvestorMessages />
+            <PrivateRoute allowedRoles={["Investor"]}>
+            <InvestorMessages />
             </PrivateRoute>
           }
         />
         <Route
           path="/dashboard/investor/profile"
           element={
-            <PrivateRoute>
-              <InvestorProfile />
+            <PrivateRoute allowedRoles={["Investor"]}>
+            <InvestorProfile />
             </PrivateRoute>
           }
         /> */}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Star, UserCircle, SearchCheck, Globe2, Radar, Handshake } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -38,7 +38,12 @@ export default function LandingPage() {
         { icon: Radar, title: "Discover Hidden Talent", description: "Access founders outside your usual network.", badge: "Investor" },
     ];
 
+    useEffect(() => {
+        localStorage.clear();
+    })
+
     return (
+
         <div className="min-h-screen bg-[#0E1525] text-[#E4E9F2] font-sans">
             {/* NAVBAR */}
             <nav className="fixed top-0 w-full z-50 bg-[#0E1525]/80 backdrop-blur-md border-b border-white/10">
