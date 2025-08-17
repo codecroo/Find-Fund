@@ -8,7 +8,7 @@ class Startup(models.Model):
     name = models.CharField(max_length=255)
     industry = models.CharField(max_length=255, blank=True)
     stage = models.CharField(max_length=50, blank=True)   # NEW
-    funding_goal = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # NEW
+    funding_goal = models.DecimalField(max_digits=12, decimal_places=2)  # NEW
     description = models.TextField(blank=True)
     website = models.URLField(blank=True)  # NEW
     team_size = models.PositiveIntegerField(null=True, blank=True)  # NEW
