@@ -23,8 +23,8 @@ export default function FounderDashboard() {
     if (!role) return null;
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white flex">
-            <DasboardLayout>
+        <DasboardLayout>
+            <div className="min-h-screen bg-gray-900 text-white flex">
                 {/* Main Content */}
                 <main className="flex-1 md:ml-0 p-6 md:p-10 overflow-y-auto">
                     <h1 className="text-3xl font-bold mb-4">Welcome, {user}</h1>
@@ -36,7 +36,7 @@ export default function FounderDashboard() {
                         <p>Manage your startups and track funding requests here.</p>
                     </div>
                 </main>
-            </DasboardLayout>
-        </div>
+            </div >
+        </DasboardLayout>
     );
 }

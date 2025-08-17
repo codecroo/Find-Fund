@@ -15,7 +15,6 @@ import {
     MessageSquare,
     User,
 } from "lucide-react";
-import Button from "./ui/Button";
 
 export default function Sidebar({ role: propRole, onLogout }) {
     const navigate = useNavigate();

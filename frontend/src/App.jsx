@@ -7,9 +7,9 @@ import LandingPage from "./pages/LandingPage";
 // Founder Pages
 import FounderDashboard from "./pages/founder/FounderDashboard";
 import FounderStartups from "./pages/founder/FounderStartups";
+import FounderProfilePage from "./pages/founder/FounderProfilePage";
 // import FounderFunding from "./pages/founder/FundingRequests";
 // import FounderMessages from "./pages/founder/Messages";
-// import FounderProfile from "./pages/founder/Profile";
 
 // Investor Pages
 import InvestorDashboard from "./pages/investor/InvestorDashboard";
@@ -60,15 +60,15 @@ function App() {
             <FounderMessages />
             </PrivateRoute>
           }
-        />
+        />*/}
         <Route
           path="/dashboard/founder/profile"
           element={
-            <PrivateRoute allowedRoles={["founder"]}>
-            <FounderProfile />
+            <PrivateRoute allowedRoles={["Founder"]}>
+              <FounderProfilePage />
             </PrivateRoute>
           }
-        /> */}
+        />
 
         {/* Investor Routes */}
         <Route
