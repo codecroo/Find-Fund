@@ -13,7 +13,7 @@ import FounderStartups from "./pages/founder/FounderStartups";
 
 // Investor Pages
 import InvestorDashboard from "./pages/investor/InvestorDashboard";
-// import InvestorBrowse from "./pages/investor/BrowseStartups";
+import InvestorBrowse from "./pages/investor/BrowseStartups";
 // import InvestorSaved from "./pages/investor/SavedStartups";
 // import InvestorInvestments from "./pages/investor/Investments";
 // import InvestorMessages from "./pages/investor/Messages";
@@ -79,15 +79,15 @@ function App() {
             </PrivateRoute>
           }
         />
-        {/* <Route
+        <Route
           path="/dashboard/investor/startups"
           element={
             <PrivateRoute allowedRoles={["Investor"]}>
-            <InvestorBrowse />
+              <InvestorBrowse />
             </PrivateRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/dashboard/investor/saved"
           element={
             <PrivateRoute allowedRoles={["Investor"]}>

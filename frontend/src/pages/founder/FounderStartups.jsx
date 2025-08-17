@@ -182,70 +182,89 @@ export default function FounderStartups() {
                 )}
 
                 {/* Startup List */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {startups.map((startup) => (
                         <div
                             key={startup.id}
-                            className="bg-[#1A1F33] rounded-2xl p-6 shadow-lg border border-white/10 hover:shadow-xl transition transform hover:-translate-y-1"
+                            className="bg-[#1A1F33] rounded-2xl p-6 shadow-lg border border-white/10 
+                       hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
                         >
-                            <div className="flex justify-between items-start">
+                            {/* Header */}
+                            <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <h2 className="text-xl font-semibold text-white mb-1">{startup.name}</h2>
-                                    <p className="text-gray-400 text-sm">{startup.industry}</p>
+                                    <h2 className="text-2xl font-semibold text-white">{startup.name}</h2>
+                                    {startup.industry && (
+                                        <p className="text-gray-400 text-base">{startup.industry}</p>
+                                    )}
                                 </div>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => handleEdit(startup)}
-                                        className="p-2 rounded-full hover:bg-indigo-600/20 text-indigo-400"
+                                        className="p-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400"
                                     >
                                         <Pencil size={18} />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(startup.id)}
-                                        className="p-2 rounded-full hover:bg-red-600/20 text-red-400"
+                                        className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400"
                                     >
                                         <Trash2 size={18} />
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="mt-4 space-y-2 text-sm text-gray-300">
-                                {startup.stage && <p>📌 Stage: {startup.stage}</p>}
-                                {startup.description && <p className="line-clamp-3">{startup.description}</p>}
-
-                                {/* funding_goal always shown if present */}
-                                {startup.funding_goal && (
-                                    <p className="text-teal-400 font-semibold">💰 Goal: ₹{startup.funding_goal}</p>
+                            {/* Stage & Goal */}
+                            <div className="flex flex-wrap gap-3 mb-4">
+                                {startup.stage && (
+                                    <span className="px-3 py-1 text-sm rounded-full bg-indigo-600/20 text-indigo-300">
+                                        {startup.stage}
+                                    </span>
                                 )}
+                                {startup.funding_goal && (
+                                    <span className="px-3 py-1 text-sm rounded-full bg-teal-600/20 text-teal-300 font-medium">
+                                        💰 ₹{startup.funding_goal}
+                                    </span>
+                                )}
+                            </div>
 
-                                {startup.team_size && <p>👥 Team Size: {startup.team_size}</p>}
-                                {startup.location && <p>📍 Location: {startup.location}</p>}
+                            {/* Description */}
+                            {startup.description && (
+                                <p className="text-gray-300 text-base leading-relaxed mb-4">
+                                    {startup.description}
+                                </p>
+                            )}
 
+                            {/* Extra Info */}
+                            <div className="space-y-1 text-gray-400 text-sm mb-4">
+                                {startup.team_size && <p>👥 Team: {startup.team_size}</p>}
+                                {startup.location && <p>📍 {startup.location}</p>}
+                            </div>
+
+                            {/* Links */}
+                            <div className="flex gap-3 pt-2">
                                 {startup.website && (
                                     <a
                                         href={externalUrl(startup.website)}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="inline-flex items-center gap-1 text-blue-400 hover:underline"
+                                        className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded-lg bg-blue-600/20 text-blue-300 hover:bg-blue-600/30"
                                     >
-                                        <Globe size={14} /> Website
+                                        <Globe size={16} /> Website
                                     </a>
                                 )}
-
                                 {startup.pitch_deck && (
-                                    <p>
-                                        <a
-                                            href={fileUrl(startup.pitch_deck)}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="inline-flex items-center gap-1 text-purple-400 hover:underline"
-                                        >
-                                            <FileText size={14} /> Pitch Deck
-                                        </a>
-                                    </p>
+                                    <a
+                                        href={fileUrl(startup.pitch_deck)}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded-lg bg-purple-600/20 text-purple-300 hover:bg-purple-600/30"
+                                    >
+                                        <FileText size={16} /> Pitch Deck
+                                    </a>
                                 )}
                             </div>
                         </div>
+
                     ))}
                 </div>
 
@@ -277,21 +296,22 @@ export default function FounderStartups() {
                                     onChange={(e) => setNewStartup({ ...newStartup, industry: e.target.value })}
                                     className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
                                 />
-
+                                <label className="block text-sm text-gray-300">Stage</label>
                                 <select
                                     value={newStartup.stage}
                                     onChange={(e) => setNewStartup({ ...newStartup, stage: e.target.value })}
                                     className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
                                 >
                                     <option value="">Select Stage</option>
-                                    <option value="Idea">Idea</option>
-                                    <option value="Prototype">Prototype</option>
-                                    <option value="MVP">MVP</option>
-                                    <option value="Seed">Seed</option>
-                                    <option value="Series A">Series A</option>
-                                    <option value="Series B">Series B</option>
+                                    <option value="Idea">💡 Idea – Just a concept, not validated yet</option>
+                                    <option value="Prototype">🔧 Prototype – Early mockups or demo</option>
+                                    <option value="MVP">🚀 MVP – Minimal product live with users</option>
+                                    <option value="Seed">🌱 Seed – Initial funding & growth</option>
+                                    <option value="Series A">📈 Series A – Scaling business model</option>
+                                    <option value="Series B">🏆 Series B – Market expansion stage</option>
                                 </select>
                                 {errors.stage && <p className="text-red-500 text-xs">{errors.stage}</p>}
+
 
                                 <input
                                     type="number"

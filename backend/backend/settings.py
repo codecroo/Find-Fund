@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     #apps
     'accounts',
     'startups',
+    'investors'
 ]
 
 MEDIA_URL = "/media/"
