@@ -29,7 +29,7 @@ export default function FounderProfilePage() {
 
     const handleSave = async () => {
         try {
-            const res = await api.put(`profiles/founder-profiles/${profile.id}/`, profile);
+            const res = await api.put(`profiles/founder-profiles/me/`, profile);
             setProfile(res.data);
             setEditing(false);
         } catch (err) {

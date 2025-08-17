@@ -64,7 +64,6 @@ export default function Sidebar({ role: propRole, onLogout }) {
                     }}
                     className={`relative flex items-center gap-3 w-full px-3 py-2 rounded-lg
             text-sm font-medium transition-all
-            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:ring-offset-gray-900
             ${item.danger
                             ? "text-red-400 hover:bg-red-500/10 hover:text-red-500"
                             : isActive
@@ -89,11 +88,10 @@ export default function Sidebar({ role: propRole, onLogout }) {
 
             {/* DESKTOP SIDEBAR */}
             <aside
-                className={`hidden md:flex h-screen  bg-gray-900 flex-col border-r border-gray-800 transition-all duration-300
-          ${collapsed ? "w-18 p-3" : "w-60 p-4"}`}
+                className={`hidden md:flex h-screen bg-gray-900 flex-col border-r border-gray-800 transition-all duration-300
+          ${collapsed ? "w-18 p-3" : "w-60 p-5"}`}
             >
                 <div className="flex justify-around text-center items-center mb-6">
-
                     {!collapsed && <h1 className="text-lg font-semibold text-white">Dashboard</h1>}
                     <button
                         onClick={() => setCollapsed(!collapsed)}
@@ -102,7 +100,7 @@ export default function Sidebar({ role: propRole, onLogout }) {
                         {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
                     </button>
                 </div>
-                <nav className="space-y-2">{renderMenu()}</nav>
+                <nav className="space-y-2 overflow-y-auto">{renderMenu()}</nav>
             </aside>
 
             {/* MOBILE DRAWER */}

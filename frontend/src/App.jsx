@@ -14,10 +14,10 @@ import FounderProfilePage from "./pages/founder/FounderProfilePage";
 // Investor Pages
 import InvestorDashboard from "./pages/investor/InvestorDashboard";
 import InvestorBrowse from "./pages/investor/BrowseStartups";
+import InvestorProfilePage from "./pages/investor/InvestorProfilePage";
 // import InvestorSaved from "./pages/investor/SavedStartups";
 // import InvestorInvestments from "./pages/investor/Investments";
 // import InvestorMessages from "./pages/investor/Messages";
-// import InvestorProfile from "./pages/investor/Profile";
 
 function App() {
   return (
@@ -110,15 +110,15 @@ function App() {
             <InvestorMessages />
             </PrivateRoute>
           }
-        />
+        />*/}
         <Route
           path="/dashboard/investor/profile"
           element={
             <PrivateRoute allowedRoles={["Investor"]}>
-            <InvestorProfile />
+              <InvestorProfilePage />
             </PrivateRoute>
           }
-        /> */}
+        />
       </Routes>
     </Router>
   );

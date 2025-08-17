@@ -28,12 +28,12 @@ export default function DashboardLayout({ children }) {
     if (!role) return null; // wait until role loads
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white flex">
-            {/* ✅ Sidebar works for both Founder & Investor */}
+        <div className="h-screen flex overflow-hidden bg-gray-900 text-white">
+            {/* Sidebar */}
             <Sidebar role={role} onLogout={handleLogout} />
 
-            {/* ✅ Main Content (different per page) */}
-            <main className="flex-1 p-6 overflow-y-auto">
+            {/* Main Content */}
+            <main className="flex-1 overflow-y-auto p-6">
                 {children}
             </main>
         </div>
