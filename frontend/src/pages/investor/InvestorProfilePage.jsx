@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../../utils/api";
 import { Card, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import DasboardLayout from "../../layouts/DashboardLayout"
 import DashboardLayout from "../../layouts/DashboardLayout";
-
 
 export default function InvestorProfilePage() {
     const [profile, setProfile] = useState(null);
@@ -45,12 +43,47 @@ export default function InvestorProfilePage() {
 
     return (
         <DashboardLayout>
-            < div className="max-w-2xl mx-auto mt-10 space-y-6" >
+            <div className="max-w-2xl mx-auto mt-10 space-y-6">
                 <Card className="p-6 shadow-lg">
                     <h2 className="text-2xl font-bold mb-4">Investor Profile</h2>
                     <CardContent className="space-y-4">
                         {editing ? (
                             <div className="space-y-4">
+                                {/* Basic Info */}
+                                <input
+                                    type="text"
+                                    name="full_name"
+                                    value={profile.full_name || ""}
+                                    onChange={handleChange}
+                                    className="w-full border p-2 rounded"
+                                    placeholder="Full Name"
+                                />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={profile.email || ""}
+                                    onChange={handleChange}
+                                    className="w-full border p-2 rounded"
+                                    placeholder="Email"
+                                />
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value={profile.phone || ""}
+                                    onChange={handleChange}
+                                    className="w-full border p-2 rounded"
+                                    placeholder="Phone"
+                                />
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={profile.location || ""}
+                                    onChange={handleChange}
+                                    className="w-full border p-2 rounded"
+                                    placeholder="Location"
+                                />
+
+                                {/* Professional Info */}
                                 <textarea
                                     name="bio"
                                     value={profile.bio || ""}
@@ -66,6 +99,24 @@ export default function InvestorProfilePage() {
                                     className="w-full border p-2 rounded"
                                     placeholder="LinkedIn URL"
                                 />
+                                <input
+                                    type="url"
+                                    name="twitter"
+                                    value={profile.twitter || ""}
+                                    onChange={handleChange}
+                                    className="w-full border p-2 rounded"
+                                    placeholder="Twitter URL"
+                                />
+                                <input
+                                    type="url"
+                                    name="website"
+                                    value={profile.website || ""}
+                                    onChange={handleChange}
+                                    className="w-full border p-2 rounded"
+                                    placeholder="Personal / Company Website"
+                                />
+
+                                {/* Investment Preferences */}
                                 <input
                                     type="number"
                                     name="investment_range_min"
@@ -88,16 +139,9 @@ export default function InvestorProfilePage() {
                                     value={profile.industries_of_interest || ""}
                                     onChange={handleChange}
                                     className="w-full border p-2 rounded"
-                                    placeholder="Industries of Interest"
+                                    placeholder="Industries of Interest (comma separated)"
                                 />
-                                <input
-                                    type="text"
-                                    name="location"
-                                    value={profile.location || ""}
-                                    onChange={handleChange}
-                                    className="w-full border p-2 rounded"
-                                    placeholder="Location"
-                                />
+
                                 <div className="flex space-x-4">
                                     <Button onClick={handleSave}>💾 Save</Button>
                                     <Button variant="secondary" onClick={() => setEditing(false)}>
@@ -107,20 +151,28 @@ export default function InvestorProfilePage() {
                             </div>
                         ) : (
                             <div className="space-y-2">
+                                <p><strong>Name:</strong> {profile.full_name || "Not provided"}</p>
+                                <p><strong>Email:</strong> {profile.email || "Not provided"}</p>
+                                <p><strong>Phone:</strong> {profile.phone || "Not provided"}</p>
+                                <p><strong>Location:</strong> {profile.location || "Not provided"}</p>
+
                                 <p><strong>Bio:</strong> {profile.bio || "Not provided"}</p>
                                 <p><strong>LinkedIn:</strong> {profile.linkedin || "Not provided"}</p>
+                                <p><strong>Twitter:</strong> {profile.twitter || "Not provided"}</p>
+                                <p><strong>Website:</strong> {profile.website || "Not provided"}</p>
+
                                 <p>
                                     <strong>Investment Range:</strong>{" "}
                                     {profile.investment_range_min || "?"} - {profile.investment_range_max || "?"}
                                 </p>
                                 <p><strong>Industries:</strong> {profile.industries_of_interest || "Not provided"}</p>
-                                <p><strong>Location:</strong> {profile.location || "Not provided"}</p>
+
                                 <Button onClick={() => setEditing(true)}>✏️ Edit Profile</Button>
                             </div>
                         )}
                     </CardContent>
                 </Card>
-            </div >
+            </div>
         </DashboardLayout>
     );
 }

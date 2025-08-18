@@ -31,7 +31,8 @@ export default function FounderStartups() {
             name: "",
             industry: "",
             stage: "",
-            funding_goal: "",        // required (frontend validates)
+            funding_goal: "",        // required
+            equity: "",              // % offered
             description: "",
             website: "",             // keep as "" so we can clear
             team_size: "",
@@ -58,17 +59,22 @@ export default function FounderStartups() {
         if (!newStartup.name.trim()) newErrors.name = "Startup Name is required";
         if (!newStartup.stage) newErrors.stage = "Please select a stage";
 
-        // funding_goal REQUIRED and positive
         if (!newStartup.funding_goal || Number(newStartup.funding_goal) <= 0) {
             newErrors.funding_goal = "Funding Goal is required and must be positive";
         }
-
+        if (!newStartup.equity || Number(newStartup.equity) <= 0) {
+            newErrors.equity = "Equity Offered is required and must be greater than 0";
+        }
+        if (!editingStartup && !(newStartup.pitch_deck instanceof File)) {
+            newErrors.pitch_deck = "Pitch Deck file is required";
+        }
         if (newStartup.team_size && Number(newStartup.team_size) <= 0) {
             newErrors.team_size = "Team Size must be greater than 0";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -78,22 +84,22 @@ export default function FounderStartups() {
         try {
             const formData = new FormData();
 
-            // Always send requireds
+            // Required fields
             formData.append("name", newStartup.name);
             formData.append("stage", newStartup.stage);
             formData.append("funding_goal", newStartup.funding_goal);
 
             // Optional text/number fields
-            ["industry", "description", "team_size", "location"].forEach((f) => {
+            ["industry", "description", "team_size", "location", "equity"].forEach((f) => {
                 if (newStartup[f] !== undefined && newStartup[f] !== null) {
                     formData.append(f, newStartup[f]);
                 }
             });
 
-            // Website: append even if empty string to CLEAR it on update
+            // Website: append even if empty string to CLEAR it
             formData.append("website", newStartup.website || "");
 
-            // Pitch deck: ONLY append if a real File selected (prevents 400)
+            // Pitch deck
             if (newStartup.pitch_deck instanceof File) {
                 formData.append("pitch_deck", newStartup.pitch_deck);
             }
@@ -131,16 +137,16 @@ export default function FounderStartups() {
     const handleEdit = (startup) => {
         setEditingStartup(startup);
         setNewStartup({
-            // normalize values so inputs show correctly
             name: startup.name || "",
             industry: startup.industry || "",
             stage: startup.stage || "",
-            funding_goal: startup.funding_goal ?? "", // keep as string/number
+            funding_goal: startup.funding_goal ?? "",
+            equity: startup.equity ?? "",
             description: startup.description || "",
-            website: startup.website || "",           // "" so clearing works
+            website: startup.website || "",
             team_size: startup.team_size ?? "",
             location: startup.location || "",
-            pitch_deck: null,                         // only send if user chooses a new File
+            pitch_deck: null,
         });
         setShowForm(true);
     };
@@ -150,6 +156,14 @@ export default function FounderStartups() {
         setEditingStartup(null);
         setNewStartup(getEmptyStartup());
         setErrors({});
+    };
+
+    // frontend valuation calculation for live preview
+    const calcValuation = () => {
+        if (newStartup.funding_goal && newStartup.equity > 0) {
+            return Number(newStartup.funding_goal) / (Number(newStartup.equity) / 100);
+        }
+        return null;
     };
 
     return (
@@ -238,6 +252,8 @@ export default function FounderStartups() {
                             <div className="space-y-1 text-gray-400 text-sm mb-4">
                                 {startup.team_size && <p>👥 Team: {startup.team_size}</p>}
                                 {startup.location && <p>📍 {startup.location}</p>}
+                                {startup.equity && <p>📊 Equity Offered: {startup.equity}%</p>}
+                                {startup.valuation && <p>💎 Valuation: ₹{startup.valuation}</p>}
                             </div>
 
                             {/* Links */}
@@ -264,7 +280,6 @@ export default function FounderStartups() {
                                 )}
                             </div>
                         </div>
-
                     ))}
                 </div>
 
@@ -312,7 +327,6 @@ export default function FounderStartups() {
                                 </select>
                                 {errors.stage && <p className="text-red-500 text-xs">{errors.stage}</p>}
 
-
                                 <input
                                     type="number"
                                     placeholder="Funding Goal (INR)"
@@ -321,6 +335,24 @@ export default function FounderStartups() {
                                     className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
                                 />
                                 {errors.funding_goal && <p className="text-red-500 text-xs">{errors.funding_goal}</p>}
+
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="Equity Offered (%)"
+                                    value={newStartup.equity}
+                                    onChange={(e) => setNewStartup({ ...newStartup, equity: e.target.value })}
+                                    className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
+                                    required
+                                />
+                                {errors.equity && <p className="text-red-500 text-xs">{errors.equity}</p>}
+
+                                {/* Live valuation preview */}
+                                {calcValuation() && (
+                                    <p className="text-green-400 text-sm">
+                                        Estimated Valuation: ₹{calcValuation().toLocaleString()}
+                                    </p>
+                                )}
 
                                 <input
                                     type="number"
@@ -369,13 +401,16 @@ export default function FounderStartups() {
                                     </p>
                                 )}
 
-                                <label className="block text-sm text-gray-300">Pitch Deck (PDF/PPT)</label>
+                                <label className="block text-sm text-gray-300">Pitch Deck (PDF/PPT) *</label>
                                 <input
                                     type="file"
                                     accept=".pdf,.ppt,.pptx"
                                     onChange={(e) => setNewStartup({ ...newStartup, pitch_deck: e.target.files[0] })}
                                     className="w-full p-2 rounded-xl bg-[#1A2236] text-white"
+                                    required={!editingStartup}   // required for new startup, optional in edit if already uploaded
                                 />
+                                {errors.pitch_deck && <p className="text-red-500 text-xs">{errors.pitch_deck}</p>}
+
 
                                 <div className="flex justify-end gap-3 pt-2">
                                     <Button type="button" variant="secondary" onClick={handleClose}>

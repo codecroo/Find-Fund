@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404
 from .models import FounderProfile, InvestorProfile
 from .serializers import FounderProfileSerializer, InvestorProfileSerializer
 
-
 class FounderProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -21,7 +20,6 @@ class FounderProfileView(APIView):
             serializer.save(user=request.user)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class InvestorProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
