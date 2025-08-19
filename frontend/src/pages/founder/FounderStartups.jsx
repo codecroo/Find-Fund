@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { PlusCircle, X, Pencil, Trash2, Globe, FileText } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { PlusCircle, X, Pencil, Trash2, Globe, FileText, RefreshCw } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import Button from "../../components/ui/Button";
-import api from "../../utils/api"; // axios instance
+import api from "../../utils/api";
 
 export default function FounderStartups() {
     const [startups, setStartups] = useState([]);
@@ -10,9 +10,10 @@ export default function FounderStartups() {
     const [editingStartup, setEditingStartup] = useState(null);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(false);
     const [newStartup, setNewStartup] = useState(getEmptyStartup());
+    const pollRef = useRef(null);
 
-    // no process.* here; Vite-style env with fallback
     const API_BASE = (import.meta?.env?.VITE_API_BASE || "http://localhost:8000").replace(/\/+$/, "");
 
     function fileUrl(path) {
@@ -31,26 +32,42 @@ export default function FounderStartups() {
             name: "",
             industry: "",
             stage: "",
-            funding_goal: "",        // required
-            equity: "",              // % offered
+            funding_goal: "",
+            equity: "",
             description: "",
-            website: "",             // keep as "" so we can clear
+            website: "",
             team_size: "",
             location: "",
-            pitch_deck: null,        // File object when chosen
+            pitch_deck: null,
         };
     }
 
     useEffect(() => {
+        // initial fetch
         fetchStartups();
+
+        // start polling every 10 seconds so UI updates automatically when amount is raised
+        pollRef.current = setInterval(() => {
+            fetchStartups().catch(() => { });
+        }, 10000); // 10000 ms = 10s
+
+        return () => {
+            if (pollRef.current) clearInterval(pollRef.current);
+        };
     }, []);
 
     const fetchStartups = async () => {
+        setFetching(true);
         try {
             const res = await api.get("startups/");
-            setStartups(res.data);
+            // Ensure an array even if backend returns null
+            setStartups(Array.isArray(res.data) ? res.data : []);
+            return res.data;
         } catch (err) {
             console.error("Failed to fetch startups", err);
+            return [];
+        } finally {
+            setFetching(false);
         }
     };
 
@@ -58,7 +75,6 @@ export default function FounderStartups() {
         const newErrors = {};
         if (!newStartup.name.trim()) newErrors.name = "Startup Name is required";
         if (!newStartup.stage) newErrors.stage = "Please select a stage";
-
         if (!newStartup.funding_goal || Number(newStartup.funding_goal) <= 0) {
             newErrors.funding_goal = "Funding Goal is required and must be positive";
         }
@@ -75,7 +91,6 @@ export default function FounderStartups() {
         return Object.keys(newErrors).length === 0;
     };
 
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
@@ -83,26 +98,16 @@ export default function FounderStartups() {
         setLoading(true);
         try {
             const formData = new FormData();
-
-            // Required fields
             formData.append("name", newStartup.name);
             formData.append("stage", newStartup.stage);
             formData.append("funding_goal", newStartup.funding_goal);
 
-            // Optional text/number fields
             ["industry", "description", "team_size", "location", "equity"].forEach((f) => {
-                if (newStartup[f] !== undefined && newStartup[f] !== null) {
-                    formData.append(f, newStartup[f]);
-                }
+                if (newStartup[f] !== undefined && newStartup[f] !== null) formData.append(f, newStartup[f]);
             });
 
-            // Website: append even if empty string to CLEAR it
             formData.append("website", newStartup.website || "");
-
-            // Pitch deck
-            if (newStartup.pitch_deck instanceof File) {
-                formData.append("pitch_deck", newStartup.pitch_deck);
-            }
+            if (newStartup.pitch_deck instanceof File) formData.append("pitch_deck", newStartup.pitch_deck);
 
             let res;
             if (editingStartup) {
@@ -116,7 +121,9 @@ export default function FounderStartups() {
                 });
                 setStartups((prev) => [...prev, res.data]);
             }
-            handleClose();
+            // refresh to get normalized fields from backend (ensures amount_raised/amount consistency)
+            await fetchStartups();
+            handleClose(false);
         } catch (err) {
             console.error("Failed to save startup", err.response?.data || err);
         } finally {
@@ -151,14 +158,15 @@ export default function FounderStartups() {
         setShowForm(true);
     };
 
-    const handleClose = () => {
+    // handleClose accepts optional boolean to skip refetch when closing (default true refetch)
+    const handleClose = (refetch = true) => {
         setShowForm(false);
         setEditingStartup(null);
         setNewStartup(getEmptyStartup());
         setErrors({});
+        if (refetch) fetchStartups().catch(() => { });
     };
 
-    // frontend valuation calculation for live preview
     const calcValuation = () => {
         if (newStartup.funding_goal && newStartup.equity > 0) {
             return Number(newStartup.funding_goal) / (Number(newStartup.equity) / 100);
@@ -166,28 +174,40 @@ export default function FounderStartups() {
         return null;
     };
 
+    // support both amount_raised and raised_amount keys (backend has used both in conversation)
+    const getRaised = (s) => {
+        return Number(s.amount_raised ?? s.raised_amount ?? 0);
+    };
+
+    const fullyFunded = (s) => getRaised(s) >= Number(s.funding_goal || 0);
+
     return (
         <DashboardLayout>
             <div className="max-w-6xl mx-auto">
-                {/* Header */}
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold text-white">My Startups</h1>
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-2xl font-bold text-white">My Startups</h1>
+                        <button
+                            onClick={() => fetchStartups()}
+                            title="Refresh"
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/6 text-white hover:bg-white/10"
+                        >
+                            <RefreshCw size={16} /> {fetching ? "Refreshing..." : "Refresh"}
+                        </button>
+                    </div>
+
                     <Button className="gap-2" variant="primary" onClick={() => setShowForm(true)}>
                         <PlusCircle size={20} />
                         Add Startup
                     </Button>
                 </div>
 
-                {/* Empty State */}
                 {startups.length === 0 && (
                     <div className="flex flex-col items-center justify-center mt-20 text-center text-gray-400">
                         <p className="text-lg">No startups added yet 🚀</p>
                         <p className="mt-2">
                             Click{" "}
-                            <span
-                                onClick={() => setShowForm(true)}
-                                className="text-indigo-400 hover:underline cursor-pointer"
-                            >
+                            <span onClick={() => setShowForm(true)} className="text-indigo-400 hover:underline cursor-pointer">
                                 Add Startup
                             </span>{" "}
                             to create your first one.
@@ -195,104 +215,105 @@ export default function FounderStartups() {
                     </div>
                 )}
 
-                {/* Startup List */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {startups.map((startup) => (
-                        <div
-                            key={startup.id}
-                            className="bg-[#1A1F33] rounded-2xl p-6 shadow-lg border border-white/10 
-                       hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
-                        >
-                            {/* Header */}
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <h2 className="text-2xl font-semibold text-white">{startup.name}</h2>
-                                    {startup.industry && (
-                                        <p className="text-gray-400 text-base">{startup.industry}</p>
+                    {startups.map((startup) => {
+                        const raised = getRaised(startup);
+                        const goal = Number(startup.funding_goal || 0);
+                        const remaining = Math.max(goal - raised, 0);
+
+                        return (
+                            <div
+                                key={startup.id}
+                                className="bg-[#1A1F33] rounded-2xl p-6 shadow-lg border border-white/10 hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h2 className="text-2xl font-semibold text-white">{startup.name}</h2>
+                                        {startup.industry && <p className="text-gray-400 text-base">{startup.industry}</p>}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleEdit(startup)}
+                                            className="p-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400"
+                                        >
+                                            <Pencil size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(startup.id)}
+                                            className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-wrap gap-3 mb-4">
+                                    {startup.stage && (
+                                        <span className="px-3 py-1 text-sm rounded-full bg-indigo-600/20 text-indigo-300">{startup.stage}</span>
+                                    )}
+                                    <span className="px-3 py-1 text-sm rounded-full bg-teal-600/20 text-teal-300 font-medium">
+                                        💰 Goal: ₹{goal}
+                                    </span>
+                                    <span className="px-3 py-1 text-sm rounded-full bg-green-600/20 text-green-300 font-medium">
+                                        ✅ Raised: ₹{raised}
+                                    </span>
+                                    <span className="px-3 py-1 text-sm rounded-full bg-yellow-600/20 text-yellow-300">
+                                        ⏳ Remaining: ₹{remaining}
+                                    </span>
+                                </div>
+
+                                {startup.description && (
+                                    <p className="text-gray-300 text-base leading-relaxed mb-4">{startup.description}</p>
+                                )}
+
+                                <div className="space-y-1 text-gray-400 text-sm mb-4">
+                                    {startup.team_size && <p>👥 Team: {startup.team_size}</p>}
+                                    {startup.location && <p>📍 {startup.location}</p>}
+                                    {startup.equity && <p>📊 Equity Offered: {startup.equity}%</p>}
+                                    {startup.valuation && <p>💎 Valuation: ₹{startup.valuation}</p>}
+                                </div>
+
+                                <div className="w-full bg-white/10 rounded-full h-2 mb-4">
+                                    <div
+                                        className={`h-2 rounded-full ${fullyFunded(startup) ? "bg-green-500" : "bg-indigo-500"}`}
+                                        style={{ width: `${Math.min((raised / (goal || 1)) * 100, 100)}%` }}
+                                    />
+                                </div>
+
+                                <div className="flex gap-3 pt-2">
+                                    {startup.website && (
+                                        <a
+                                            href={externalUrl(startup.website)}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded-lg bg-blue-600/20 text-blue-300 hover:bg-blue-600/30"
+                                        >
+                                            <Globe size={16} /> Website
+                                        </a>
+                                    )}
+                                    {startup.pitch_deck && (
+                                        <a
+                                            href={fileUrl(startup.pitch_deck)}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded-lg bg-purple-600/20 text-purple-300 hover:bg-purple-600/30"
+                                        >
+                                            <FileText size={16} /> Pitch Deck
+                                        </a>
                                     )}
                                 </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => handleEdit(startup)}
-                                        className="p-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400"
-                                    >
-                                        <Pencil size={18} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(startup.id)}
-                                        className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
                             </div>
-
-                            {/* Stage & Goal */}
-                            <div className="flex flex-wrap gap-3 mb-4">
-                                {startup.stage && (
-                                    <span className="px-3 py-1 text-sm rounded-full bg-indigo-600/20 text-indigo-300">
-                                        {startup.stage}
-                                    </span>
-                                )}
-                                {startup.funding_goal && (
-                                    <span className="px-3 py-1 text-sm rounded-full bg-teal-600/20 text-teal-300 font-medium">
-                                        💰 ₹{startup.funding_goal}
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Description */}
-                            {startup.description && (
-                                <p className="text-gray-300 text-base leading-relaxed mb-4">
-                                    {startup.description}
-                                </p>
-                            )}
-
-                            {/* Extra Info */}
-                            <div className="space-y-1 text-gray-400 text-sm mb-4">
-                                {startup.team_size && <p>👥 Team: {startup.team_size}</p>}
-                                {startup.location && <p>📍 {startup.location}</p>}
-                                {startup.equity && <p>📊 Equity Offered: {startup.equity}%</p>}
-                                {startup.valuation && <p>💎 Valuation: ₹{startup.valuation}</p>}
-                            </div>
-
-                            {/* Links */}
-                            <div className="flex gap-3 pt-2">
-                                {startup.website && (
-                                    <a
-                                        href={externalUrl(startup.website)}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded-lg bg-blue-600/20 text-blue-300 hover:bg-blue-600/30"
-                                    >
-                                        <Globe size={16} /> Website
-                                    </a>
-                                )}
-                                {startup.pitch_deck && (
-                                    <a
-                                        href={fileUrl(startup.pitch_deck)}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded-lg bg-purple-600/20 text-purple-300 hover:bg-purple-600/30"
-                                    >
-                                        <FileText size={16} /> Pitch Deck
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
-                {/* Add / Edit Modal */}
                 {showForm && (
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
                         <div className="bg-[#121826] p-6 rounded-2xl w-full max-w-lg shadow-lg relative max-h-[90vh] overflow-y-auto">
-                            <button onClick={handleClose} className="absolute top-4 right-4 text-gray-400 hover:text-white">
+                            <button onClick={() => handleClose()} className="absolute top-4 right-4 text-gray-400 hover:text-white">
                                 <X size={20} />
                             </button>
-                            <h2 className="text-xl font-bold text-white mb-5">
-                                {editingStartup ? "Edit Startup" : "Add Startup"}
-                            </h2>
+                            <h2 className="text-xl font-bold text-white mb-5">{editingStartup ? "Edit Startup" : "Add Startup"}</h2>
 
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <input
@@ -347,12 +368,7 @@ export default function FounderStartups() {
                                 />
                                 {errors.equity && <p className="text-red-500 text-xs">{errors.equity}</p>}
 
-                                {/* Live valuation preview */}
-                                {calcValuation() && (
-                                    <p className="text-green-400 text-sm">
-                                        Estimated Valuation: ₹{calcValuation().toLocaleString()}
-                                    </p>
-                                )}
+                                {calcValuation() && <p className="text-green-400 text-sm">Estimated Valuation: ₹{calcValuation().toLocaleString()}</p>}
 
                                 <input
                                     type="number"
@@ -386,16 +402,10 @@ export default function FounderStartups() {
                                     className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
                                 />
 
-                                {/* Existing deck link in edit mode */}
                                 {editingStartup?.pitch_deck && !newStartup.pitch_deck && (
                                     <p className="text-sm text-gray-400">
                                         Current file:{" "}
-                                        <a
-                                            href={fileUrl(editingStartup.pitch_deck)}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-purple-400 hover:underline"
-                                        >
+                                        <a href={fileUrl(editingStartup.pitch_deck)} target="_blank" rel="noreferrer" className="text-purple-400 hover:underline">
                                             View Pitch Deck
                                         </a>
                                     </p>
@@ -407,13 +417,12 @@ export default function FounderStartups() {
                                     accept=".pdf,.ppt,.pptx"
                                     onChange={(e) => setNewStartup({ ...newStartup, pitch_deck: e.target.files[0] })}
                                     className="w-full p-2 rounded-xl bg-[#1A2236] text-white"
-                                    required={!editingStartup}   // required for new startup, optional in edit if already uploaded
+                                    required={!editingStartup}
                                 />
                                 {errors.pitch_deck && <p className="text-red-500 text-xs">{errors.pitch_deck}</p>}
 
-
                                 <div className="flex justify-end gap-3 pt-2">
-                                    <Button type="button" variant="secondary" onClick={handleClose}>
+                                    <Button type="button" variant="secondary" onClick={() => handleClose()}>
                                         Cancel
                                     </Button>
                                     <Button type="submit" disabled={loading}>

@@ -31,7 +31,6 @@ export default function Sidebar({ role: propRole, onLogout }) {
             ? [
                 { label: "My Startups", icon: <Rocket size={20} />, path: "/dashboard/founder/startups" },
                 { label: "Funding Requests", icon: <DollarSign size={20} />, path: "/dashboard/founder/funding" },
-                { label: "Messages", icon: <MessageSquare size={20} />, path: "/dashboard/founder/messages" },
                 { label: "Profile", icon: <User size={20} />, path: "/dashboard/founder/profile" },
             ]
             : []),
