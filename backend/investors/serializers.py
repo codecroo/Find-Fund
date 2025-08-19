@@ -1,6 +1,6 @@
 # investors/serializers.py
 from rest_framework import serializers
-from .models import InvestmentRequest
+from .models import InvestmentRequest,SavedStartup
 from startups.models import Startup
 from startups.serializers import StartupSerializer
 from profiles.serializers import InvestorProfileSerializer
@@ -44,3 +44,11 @@ class InvestmentRequestSerializer(serializers.ModelSerializer):
                 {"amount": "Amount must be greater than 0."}
             )
         return data
+
+
+class SavedStartupSerializer(serializers.ModelSerializer):
+    startup = StartupSerializer(read_only=True)
+
+    class Meta:
+        model = SavedStartup
+        fields = ["id", "startup", "created_at"]

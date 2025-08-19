@@ -9,17 +9,13 @@ import FounderDashboard from "./pages/founder/FounderDashboard";
 import FounderStartups from "./pages/founder/FounderStartups";
 import FounderProfilePage from "./pages/founder/FounderProfilePage";
 import FounderFunding from "./pages/founder/FounderFunding";
-// import FounderFunding from "./pages/founder/FundingRequests";
-// import FounderMessages from "./pages/founder/Messages";
 
 // Investor Pages
 import InvestorDashboard from "./pages/investor/InvestorDashboard";
 import InvestorBrowse from "./pages/investor/BrowseStartups";
 import InvestorProfilePage from "./pages/investor/InvestorProfilePage";
 import InvestorInvestments from "./pages/investor/InvestorInvestments";
-// import InvestorSaved from "./pages/investor/SavedStartups";
-// import InvestorInvestments from "./pages/investor/Investments";
-// import InvestorMessages from "./pages/investor/Messages";
+import InvestorSaved from "./pages/investor/InvestorSaved";
 
 function App() {
   return (
@@ -39,6 +35,7 @@ function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/dashboard/founder/startups"
           element={
@@ -47,6 +44,7 @@ function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/dashboard/founder/funding"
           element={
@@ -55,15 +53,7 @@ function App() {
             </PrivateRoute>
           }
         />
-        {/*
-        <Route
-          path="/dashboard/founder/messages"
-          element={
-            <PrivateRoute allowedRoles={["Founder"]}>
-            <FounderMessages />
-            </PrivateRoute>
-          }
-        />*/}
+
         <Route
           path="/dashboard/founder/profile"
           element={
@@ -98,23 +88,15 @@ function App() {
             </PrivateRoute>
           }
         />
-        {/* <Route
+        <Route
           path="/dashboard/investor/saved"
           element={
             <PrivateRoute allowedRoles={["Investor"]}>
-            <InvestorSaved />
+              <InvestorSaved />
             </PrivateRoute>
           }
         />
-       
-        <Route
-          path="/dashboard/investor/messages"
-          element={
-            <PrivateRoute allowedRoles={["Investor"]}>
-            <InvestorMessages />
-            </PrivateRoute>
-          }
-        />*/}
+
         <Route
           path="/dashboard/investor/profile"
           element={

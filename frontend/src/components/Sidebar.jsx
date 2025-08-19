@@ -40,7 +40,6 @@ export default function Sidebar({ role: propRole, onLogout }) {
                 { label: "Browse Startups", icon: <Building2 size={20} />, path: "/dashboard/investor/startups" },
                 { label: "Saved Startups", icon: <Rocket size={20} />, path: "/dashboard/investor/saved" },
                 { label: "My Investments", icon: <Briefcase size={20} />, path: "/dashboard/investor/investments" },
-                { label: "Messages", icon: <MessageSquare size={20} />, path: "/dashboard/investor/messages" },
                 { label: "Profile", icon: <User size={20} />, path: "/dashboard/investor/profile" },
             ]
             : []),

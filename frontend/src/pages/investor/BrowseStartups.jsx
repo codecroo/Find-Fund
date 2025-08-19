@@ -1,30 +1,24 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import api from "../../utils/api";
-import { Globe, FileText, User, X } from "lucide-react";
+import { Globe, FileText, User, X, Bookmark } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function BrowseStartups() {
     const [startups, setStartups] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedFounder, setSelectedFounder] = useState(null);
-    const [pendingRequests, setPendingRequests] = useState({}); // startupId -> true | "sending"
+    const [pendingRequests, setPendingRequests] = useState({});
+    const [savedStartups, setSavedStartups] = useState(new Set()); // track saved
 
     const API_BASE = (import.meta?.env?.VITE_API_BASE || "http://localhost:8000").replace(/\/+$/, "");
 
-    const fileUrl = (path) => {
-        if (!path) return "";
-        if (/^https?:\/\//i.test(path)) return path;
-        return `${API_BASE}/${String(path).replace(/^\/+/, "")}`;
-    };
-
-    const externalUrl = (url) => {
-        if (!url) return "";
-        return /^https?:\/\//i.test(url) ? url : `https://${url}`;
-    };
+    const fileUrl = (path) => (!path ? "" : /^https?:\/\//i.test(path) ? path : `${API_BASE}/${String(path).replace(/^\/+/, "")}`);
+    const externalUrl = (url) => (!url ? "" : /^https?:\/\//i.test(url) ? url : `https://${url}`);
 
     useEffect(() => {
         fetchStartups();
+        fetchSaved();
     }, []);
 
     const fetchStartups = async () => {
@@ -39,9 +33,32 @@ export default function BrowseStartups() {
         }
     };
 
-    // helpers
+    const fetchSaved = async () => {
+        try {
+            const res = await api.get("investors/saved/");
+            const ids = res.data.map((s) => s.startup.id);
+            setSavedStartups(new Set(ids));
+        } catch (err) {
+            console.error("Failed to fetch saved startups", err);
+        }
+    };
+
+    const handleSaveStartup = async (startupId) => {
+        try {
+            // ✅ backend expects { startup: id }
+            await api.post("investors/saved/", { startup: startupId });
+            setSavedStartups((prev) => new Set([...prev, startupId]));
+            alert("✅ Startup saved!");
+        } catch (err) {
+            console.error("Failed to save startup", err);
+            alert("❌ Could not save startup");
+        }
+    };
+
+    // ---- request handling ----
     const getRaised = (s) => Number(s.amount_raised ?? s.raised_amount ?? 0);
     const fullyFunded = (s) => getRaised(s) >= Number(s.funding_goal || 0);
+
     const handleSendRequest = async (startupId, amount, resetForm) => {
         const startup = startups.find((s) => s.id === startupId);
         if (!startup) return alert("Startup not found");
@@ -61,34 +78,23 @@ export default function BrowseStartups() {
         setPendingRequests((prev) => ({ ...prev, [startupId]: "sending" }));
 
         try {
-            // 👇 changed from startup → startup_id
-            const payload = { startup_id: startupId, amount: numericAmount };
+            // ✅ backend expects { startup: id, amount }
+            const payload = { startup: startupId, amount: numericAmount };
             const res = await api.post("investors/requests/", payload);
 
             setPendingRequests((prev) => ({ ...prev, [startupId]: true }));
             alert("✅ Request sent successfully");
+
             if (typeof resetForm === "function") resetForm();
             return res.data;
         } catch (err) {
             console.error("❌ Failed to send request", err);
-
             setPendingRequests((prev) => {
                 const copy = { ...prev };
                 delete copy[startupId];
                 return copy;
             });
-
-            const data = err?.response?.data;
-            if (data) {
-                let message = "Failed to send request.";
-                if (typeof data === "string") message = data;
-                else if (data.amount) message = `Amount: ${data.amount}`;
-                else if (data.startup_id) message = `Startup: ${data.startup_id}`; // 👈 updated
-                else if (data.detail) message = data.detail;
-                alert(message);
-            } else {
-                alert("Network error: Failed to send request");
-            }
+            alert("Failed to send request");
         }
     };
 
@@ -100,19 +106,17 @@ export default function BrowseStartups() {
                 </div>
 
                 {loading && <p className="text-center text-gray-400">Loading startups...</p>}
-                {!loading && startups.length === 0 && (
-                    <p className="text-center text-gray-400">No startups available 🚀</p>
-                )}
+                {!loading && startups.length === 0 && <p className="text-center text-gray-400">No startups available 🚀</p>}
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {startups.map((startup) => {
                         const raised = getRaised(startup);
                         const goal = Number(startup.funding_goal || 0);
                         const remaining = Math.max(goal - raised, 0);
-
                         const isRequested = pendingRequests[startup.id] === true;
                         const isSending = pendingRequests[startup.id] === "sending";
                         const isDisabled = fullyFunded(startup) || isRequested || isSending;
+                        const isSaved = savedStartups.has(startup.id);
 
                         return (
                             <motion.div
@@ -123,6 +127,17 @@ export default function BrowseStartups() {
                             >
                                 <h2 className="text-xl font-bold text-white mb-1">{startup.name}</h2>
                                 {startup.industry && <p className="text-gray-400 text-sm mb-4">{startup.industry}</p>}
+
+                                {/* SAVE BUTTON */}
+                                <button
+                                    onClick={() => handleSaveStartup(startup.id)}
+                                    disabled={isSaved}
+                                    className={`mb-3 flex items-center gap-2 px-3 py-1 rounded-lg text-sm 
+                                        ${isSaved ? "bg-green-600/20 text-green-400 cursor-not-allowed" : "bg-white/10 text-white hover:bg-white/20"}`}
+                                >
+                                    <Bookmark size={14} />
+                                    {isSaved ? "Saved" : "Save"}
+                                </button>
 
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {startup.stage && (

@@ -39,7 +39,9 @@ export default function LandingPage() {
     ];
 
     useEffect(() => {
-        localStorage.clear();
+        localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("username");
+        localStorage.removeItem("role");
     })
 
     return (

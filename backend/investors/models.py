@@ -16,3 +16,15 @@ class InvestmentRequest(models.Model):
 
     def __str__(self):
         return f"{self.investor} → {self.startup} ({self.amount})"
+    
+    
+class SavedStartup(models.Model):
+    investor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_startups")
+    startup = models.ForeignKey(Startup, on_delete=models.CASCADE, related_name="saved_by")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("investor", "startup")
+
+    def __str__(self):
+        return f"{self.investor.username} saved {self.startup.name}"

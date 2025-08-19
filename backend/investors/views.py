@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from startups.models import Startup
 from startups.serializers import StartupSerializer
-from .models import InvestmentRequest
-from .serializers import InvestmentRequestSerializer
+from .models import InvestmentRequest, SavedStartup
+from .serializers import InvestmentRequestSerializer, SavedStartupSerializer
 
 
 # ✅ Browse startups
@@ -90,3 +90,41 @@ class MyInvestments(APIView):
         ).order_by("-created_at")
         serializer = InvestmentRequestSerializer(accepted, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# ✅ Investor: Save + List saved startups
+class SavedStartups(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        saved = SavedStartup.objects.filter(investor=request.user).order_by("-created_at")
+        serializer = SavedStartupSerializer(saved, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        startup_id = request.data.get("startup")
+        if not startup_id:
+            return Response({"error": "startup field required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            startup = Startup.objects.get(id=startup_id)
+        except Startup.DoesNotExist:
+            return Response({"error": "Startup not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        saved, created = SavedStartup.objects.get_or_create(
+            investor=request.user, startup=startup
+        )
+        if not created:
+            return Response({"message": "Already saved"}, status=status.HTTP_200_OK)
+
+        serializer = SavedStartupSerializer(saved)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def delete(self, request, *args, **kwargs):
+        startup_id = request.data.get("startup")
+        if not startup_id:
+            return Response({"error": "Startup ID required"}, status=400)
+        
+        SavedStartup.objects.filter(investor=request.user, startup_id=startup_id).delete()
+        return Response(status=204)
+
