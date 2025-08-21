@@ -9,6 +9,85 @@ button {
     cursor: pointer;
 }
 
-*{
-    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+:root {
+    --ui-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, system-ui, sans-serif;
+    --display-font: "Poppins", var(--ui-font);
 }
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    font-family: var(--ui-font);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 18px;
+    line-height: 1.6;
+    color: #e6eef8;
+    background: #07121a;
+}
+
+h1 {
+    font-size: 2rem;
+    /* 42px */
+    line-height: 1.05;
+    font-weight: 700;
+    font-family: var(--display-font);
+}
+
+h2 {
+    font-size: 1.555rem;
+    line-height: 1.5;
+    font-weight: 600;
+    font-family: var(--display-font);
+}
+
+h3 {
+    font-size: 1.375rem;
+    /* 22px */
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+h4 {
+    font-size: 1.125rem;
+    /* 18px */
+    line-height: 1.25;
+}
+
+p,
+label,
+input,
+button,
+textarea {
+    font-size: 1rem;
+    /* 18px */
+}
+
+/* Make small text still readable */
+.text-sm {
+    font-size: 0.9375rem;
+    /* 17px */
+}
+
+/* More breathing room on cards & controls */
+.card {
+    padding: 1.75rem;
+}
+
+/* use p-7 or p-6 -> p-7 */
+.input-lg {
+    padding: 0.9rem 1rem;
+    border-radius: .75rem;
+}
+
+/* use px-4 py-3 */
+.btn-lg {
+    padding: 0.6rem 1rem;
+    border-radius: .75rem;
+    font-weight: 600;
+}
+
