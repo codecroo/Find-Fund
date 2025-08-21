@@ -144,11 +144,7 @@ const FounderFunding = () => {
                                         Founder: <span className="font-medium">{req.startup?.founder?.full_name || "—"}</span>
                                     </p>
 
-                                    <p className="flex items-center gap-2">
-                                        <UserCheck size={18} className="text-green-400" />
-                                        Investor: <span className="font-medium">{req.investor?.full_name || "—"}</span>
-                                    </p>
-
+                              
                                     <p className="flex items-center gap-2 text-lg font-semibold text-green-400 mt-4">
                                         <Banknote size={18} /> ₹{req.amount}
                                     </p>

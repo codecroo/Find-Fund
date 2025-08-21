@@ -204,6 +204,7 @@ export default function FounderStartups() {
         Boolean(newStartup.name?.trim()) &&
         Boolean(newStartup.stage) &&
         Number(newStartup.funding_goal) > 0 &&
+        Number(newStartup.team_size) > 0 &&
         Number(newStartup.equity) > 0 &&
         (editingStartup ? true : newStartup.pitch_deck instanceof File);
 
@@ -320,7 +321,7 @@ export default function FounderStartups() {
 
                                         {startup.team_size && (
                                             <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-white/6 text-gray-200">
-                                                <Users size={14} /> {startup.team_size} team
+                                                <Users size={14} /> {startup.team_size} Members
                                             </span>
                                         )}
 

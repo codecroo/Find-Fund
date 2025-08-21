@@ -275,7 +275,7 @@ export default function FounderProfilePage() {
                                         name="skills"
                                         value={profile.skills || ""}
                                         onChange={handleChange}
-                                        placeholder="React, Node, Growth..."
+                                        placeholder="Marketing, Growth..."
                                         className="w-full p-3 rounded-xl bg-[#0F1724] text-white border border-white/6"
                                     />
                                 </div>
