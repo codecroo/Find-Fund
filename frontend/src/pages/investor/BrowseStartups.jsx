@@ -9,12 +9,14 @@ export default function BrowseStartups() {
     const [loading, setLoading] = useState(false);
     const [selectedFounder, setSelectedFounder] = useState(null);
     const [pendingRequests, setPendingRequests] = useState({});
-    const [savedStartups, setSavedStartups] = useState(new Set()); // track saved
+    const [savedStartups, setSavedStartups] = useState(new Set());
 
     const API_BASE = (import.meta?.env?.VITE_API_BASE || "http://localhost:8000").replace(/\/+$/, "");
 
-    const fileUrl = (path) => (!path ? "" : /^https?:\/\//i.test(path) ? path : `${API_BASE}/${String(path).replace(/^\/+/, "")}`);
-    const externalUrl = (url) => (!url ? "" : /^https?:\/\//i.test(url) ? url : `https://${url}`);
+    const fileUrl = (path) =>
+        !path ? "" : /^https?:\/\//i.test(path) ? path : `${API_BASE}/${String(path).replace(/^\/+/, "")}`;
+    const externalUrl = (url) =>
+        !url ? "" : /^https?:\/\//i.test(url) ? url : `https://${url}`;
 
     useEffect(() => {
         fetchStartups();
@@ -45,7 +47,6 @@ export default function BrowseStartups() {
 
     const handleSaveStartup = async (startupId) => {
         try {
-            // ✅ backend expects { startup: id }
             await api.post("investors/saved/", { startup: startupId });
             setSavedStartups((prev) => new Set([...prev, startupId]));
             alert("✅ Startup saved!");
@@ -55,7 +56,7 @@ export default function BrowseStartups() {
         }
     };
 
-    // ---- request handling ----
+    // helpers
     const getRaised = (s) => Number(s.amount_raised ?? s.raised_amount ?? 0);
     const fullyFunded = (s) => getRaised(s) >= Number(s.funding_goal || 0);
 
@@ -78,8 +79,8 @@ export default function BrowseStartups() {
         setPendingRequests((prev) => ({ ...prev, [startupId]: "sending" }));
 
         try {
-            // ✅ backend expects { startup: id, amount }
-            const payload = { startup: startupId, amount: numericAmount };
+            // 🔑 send startup_id (matches backend serializer)
+            const payload = { startup_id: startupId, amount: numericAmount };
             const res = await api.post("investors/requests/", payload);
 
             setPendingRequests((prev) => ({ ...prev, [startupId]: true }));
@@ -146,13 +147,13 @@ export default function BrowseStartups() {
                                         </span>
                                     )}
                                     <span className="px-3 py-1 text-sm rounded-full bg-teal-600/20 text-teal-300 font-semibold">
-                                        💰 Goal: ₹{goal}
+                                        💰 Goal: ₹{goal.toLocaleString("en-IN")}
                                     </span>
                                     <span className="px-3 py-1 text-sm rounded-full bg-green-600/20 text-green-300 font-semibold">
-                                        ✅ Raised: ₹{raised}
+                                        ✅ Raised: ₹{raised.toLocaleString("en-IN")}
                                     </span>
                                     <span className="px-3 py-1 text-sm rounded-full bg-yellow-600/20 text-yellow-300">
-                                        ⏳ Remaining: ₹{remaining}
+                                        ⏳ Remaining: ₹{remaining.toLocaleString("en-IN")}
                                     </span>
                                     {startup.equity && (
                                         <span className="px-3 py-1 text-sm rounded-full bg-pink-600/20 text-pink-300">
@@ -219,7 +220,7 @@ export default function BrowseStartups() {
                                                         fullyFunded(startup)
                                                             ? "Fully funded"
                                                             : remaining > 0
-                                                                ? `Amount (max ₹${remaining})`
+                                                                ? `Amount (max ₹${remaining.toLocaleString("en-IN")})`
                                                                 : "Amount"
                                                     }
                                                     className="flex-1 px-2 py-1 rounded bg-white/10 text-white border border-white/20 text-sm"

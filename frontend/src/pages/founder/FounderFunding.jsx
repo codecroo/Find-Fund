@@ -1,28 +1,32 @@
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import api from "../../utils/api"; // ✅ centralized axios instance
+import api from "../../utils/api";
+import Button from "../../components/ui/Button"; // using your custom button
+import { Users, Banknote, UserCheck, UserX, Search, RefreshCw } from "lucide-react";
 
 const FounderFunding = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(false);
+    const [query, setQuery] = useState("");
 
-    // ✅ Fetch investment requests
+    // Fetch investment requests
     const fetchRequests = async () => {
+        setFetching(true);
         try {
             const res = await api.get("investors/founder/requests/");
-            setRequests(res.data);
+            setRequests(res.data || []);
         } catch (err) {
             console.error("Failed to fetch requests", err);
+        } finally {
+            setFetching(false);
         }
     };
 
-    // ✅ Fetch founder startups (so we refresh raised amount too)
+    // Refresh startups for amount_raised sync
     const refreshStartups = async () => {
         try {
             await api.get("startups/");
-            // ⚡ assuming you already have MyStartups consuming this endpoint
-            // The fetch will update cache / global state if you use React Query or context
-            // If not using global state, you can pass a prop setter from parent instead
         } catch (err) {
             console.error("Failed to refresh startups", err);
         }
@@ -36,13 +40,8 @@ const FounderFunding = () => {
         try {
             setLoading(true);
             await api.patch(`investors/founder/requests/${id}/`, { status: decision });
-
-            // 🔄 Refresh requests list
             await fetchRequests();
-
-            // 🔄 Refresh startups so amount_raised updates in MyStartups page
             await refreshStartups();
-
         } catch (err) {
             console.error("Failed to update request", err);
         } finally {
@@ -50,62 +49,115 @@ const FounderFunding = () => {
         }
     };
 
+    const filtered = requests.filter((r) =>
+        query.trim()
+            ? String(r.startup?.name || "").toLowerCase().includes(query.toLowerCase()) ||
+            String(r.investor?.full_name || "").toLowerCase().includes(query.toLowerCase())
+            : true
+    );
+
     return (
         <DashboardLayout>
-            <h2 className="text-3xl font-bold mb-8 text-indigo-700">Funding Requests</h2>
+            <div className="max-w-7xl mx-auto p-6">
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {requests.length > 0 ? (
-                    requests.map((req) => (
-                        <div
-                            key={req.id}
-                            className="bg-gradient-to-r from-[#1A1F33] to-[#141826] p-6 rounded-2xl shadow-lg border hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-                        >
-                            <h3 className="text-xl font-bold text-white mb-2">🚀 {req.startup.name}</h3>
-                            <p className="text-white mb-1">
-                                👤 Founder: <span className="font-medium">{req.startup.founder?.full_name}</span>
-                            </p>
-                            <p className="text-white mb-1">
-                                💼 Investor: <span className="font-medium">{req.investor?.full_name}</span>
-                            </p>
-                            <p className="text-lg font-semibold text-green-600 mt-2 mb-4">
-                                💰 Amount: ₹{req.amount}
-                            </p>
+                {/* Header (kept consistent with My Startups) */}
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+                    <div>
+                        <h1 className="text-4xl font-bold text-white">Funding Requests</h1>
+                        <p className="text-sm text-gray-400 mt-2 max-w-xl">
+                            Review and approve incoming investor requests — keep funding moving smoothly.
+                        </p>
+                    </div>
 
-                            {/* Status / Actions */}
-                            {req.status === "pending" ? (
-                                <div className="flex gap-4">
-                                    <button
-                                        disabled={loading}
-                                        onClick={() => handleDecision(req.id, "accepted")}
-                                        className="px-5 py-2 bg-green-500 text-white font-medium rounded-lg shadow-md hover:bg-green-600 hover:shadow-lg transition-all disabled:opacity-50"
-                                    >
-                                        ✅ Accept
-                                    </button>
-                                    <button
-                                        disabled={loading}
-                                        onClick={() => handleDecision(req.id, "rejected")}
-                                        className="px-5 py-2 bg-red-500 text-white font-medium rounded-lg shadow-md hover:bg-red-600 hover:shadow-lg transition-all disabled:opacity-50"
-                                    >
-                                        ❌ Reject
-                                    </button>
-                                </div>
-                            ) : (
-                                <span
-                                    className={`inline-block px-3 py-1 rounded-lg text-white font-semibold ${req.status === "accepted"
-                                        ? "bg-green-600/70"
-                                        : "bg-red-600/70"
-                                        }`}
-                                >
-                                    {req.status.toUpperCase()}
-                                </span>
-                            )}
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <Search className="absolute left-4 top-3 text-gray-400" size={18} />
+                            <input
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                placeholder="Search by startup or investor"
+                                className="pl-12 pr-4 py-3 rounded-full bg-[#0F1724] border border-white/6 text-sm text-gray-200 w-[280px] focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                            />
                         </div>
-                    ))
-                ) : (
-                    <p className="text-gray-500 text-lg">No funding requests yet 🚫</p>
-                )}
+
+                        <Button
+                            onClick={() => fetchRequests()}
+                            variant="secondary"
+                            size="default"
+                            className="flex items-center gap-2"
+                        >
+                            <RefreshCw size={16} />
+                            <span>{fetching ? "Refreshing" : "Refresh"}</span>
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Requests Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {filtered.length > 0 ? (
+                        filtered.map((req) => (
+                            <div
+                                key={req.id}
+                                className="bg-gradient-to-br from-[#0E1220] to-[#121826]  p-8 rounded-2xl shadow-lg border border-white/10 
+                        hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+                            >
+                                <h3 className="text-xl font-bold text-white mb-4">🚀 {req.startup?.name}</h3>
+
+                                <div className="space-y-2 text-gray-200">
+                                    <p className="flex items-center gap-2">
+                                        <Users size={18} className="text-indigo-400" />
+                                        Founder: <span className="font-medium">{req.startup?.founder?.full_name || "—"}</span>
+                                    </p>
+
+                                    <p className="flex items-center gap-2">
+                                        <UserCheck size={18} className="text-green-400" />
+                                        Investor: <span className="font-medium">{req.investor?.full_name || "—"}</span>
+                                    </p>
+
+                                    <p className="flex items-center gap-2 text-lg font-semibold text-green-400 mt-4">
+                                        <Banknote size={18} /> ₹{req.amount}
+                                    </p>
+                                </div>
+
+                                <div className="mt-6">
+                                    {req.status === "pending" ? (
+                                        <div className="flex gap-4">
+                                            <Button
+                                                onClick={() => handleDecision(req.id, "accepted")}
+                                                disabled={loading}
+                                                variant="primary"
+                                                className="flex items-center gap-2"
+                                            >
+                                                <UserCheck size={16} /> Accept
+                                            </Button>
+                                            <Button
+                                                onClick={() => handleDecision(req.id, "rejected")}
+                                                disabled={loading}
+                                                variant="danger"
+                                                className="flex items-center gap-2"
+                                            >
+                                                <UserX size={16} /> Reject
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <span
+                                            className={`inline-block px-4 py-2 rounded-full text-sm font-semibold tracking-wide ${req.status === "accepted"
+                                                ? "bg-green-600/20 text-green-400 border border-green-500/40"
+                                                : "bg-red-600/20 text-red-400 border border-red-500/40"
+                                                }`}
+                                        >
+                                            {req.status.toUpperCase()}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-500 text-lg">No funding requests yet 🚫</p>
+                    )}
+                </div>
             </div>
+
         </DashboardLayout>
     );
 };

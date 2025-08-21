@@ -1,9 +1,25 @@
-import { useState, useEffect, useRef } from "react";
-import { PlusCircle, X, Pencil, Trash2, Globe, FileText, RefreshCw } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import {
+    PlusCircle,
+    X,
+    Pencil,
+    Trash2,
+    Globe,
+    FileText,
+    RefreshCw,
+    Banknote,
+    CheckCircle,
+    Users,
+    MapPin,
+    Rocket,
+    Search,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import Button from "../../components/ui/Button";
 import api from "../../utils/api";
+import Button from "../../components/ui/Button"; // using your Button component
 
+// FounderStartups — uses user's Button component for all actions
 export default function FounderStartups() {
     const [startups, setStartups] = useState([]);
     const [showForm, setShowForm] = useState(false);
@@ -12,6 +28,7 @@ export default function FounderStartups() {
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(false);
     const [newStartup, setNewStartup] = useState(getEmptyStartup());
+    const [query, setQuery] = useState("");
     const pollRef = useRef(null);
 
     const API_BASE = (import.meta?.env?.VITE_API_BASE || "http://localhost:8000").replace(/\/+$/, "");
@@ -43,24 +60,15 @@ export default function FounderStartups() {
     }
 
     useEffect(() => {
-        // initial fetch
         fetchStartups();
-
-        // start polling every 10 seconds so UI updates automatically when amount is raised
-        pollRef.current = setInterval(() => {
-            fetchStartups().catch(() => { });
-        }, 10000); // 10000 ms = 10s
-
-        return () => {
-            if (pollRef.current) clearInterval(pollRef.current);
-        };
+        pollRef.current = setInterval(() => fetchStartups().catch(() => { }), 10000);
+        return () => clearInterval(pollRef.current);
     }, []);
 
     const fetchStartups = async () => {
         setFetching(true);
         try {
             const res = await api.get("startups/");
-            // Ensure an array even if backend returns null
             setStartups(Array.isArray(res.data) ? res.data : []);
             return res.data;
         } catch (err) {
@@ -94,18 +102,15 @@ export default function FounderStartups() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
-
         setLoading(true);
         try {
             const formData = new FormData();
             formData.append("name", newStartup.name);
             formData.append("stage", newStartup.stage);
             formData.append("funding_goal", newStartup.funding_goal);
-
             ["industry", "description", "team_size", "location", "equity"].forEach((f) => {
                 if (newStartup[f] !== undefined && newStartup[f] !== null) formData.append(f, newStartup[f]);
             });
-
             formData.append("website", newStartup.website || "");
             if (newStartup.pitch_deck instanceof File) formData.append("pitch_deck", newStartup.pitch_deck);
 
@@ -119,9 +124,8 @@ export default function FounderStartups() {
                 res = await api.post("startups/", formData, {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
-                setStartups((prev) => [...prev, res.data]);
+                setStartups((prev) => [res.data, ...prev]);
             }
-            // refresh to get normalized fields from backend (ensures amount_raised/amount consistency)
             await fetchStartups();
             handleClose(false);
         } catch (err) {
@@ -131,16 +135,7 @@ export default function FounderStartups() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this startup?")) return;
-        try {
-            await api.delete(`startups/${id}/`);
-            setStartups((prev) => prev.filter((s) => s.id !== id));
-        } catch (err) {
-            console.error("Failed to delete startup", err.response?.data || err);
-        }
-    };
-
+  
     const handleEdit = (startup) => {
         setEditingStartup(startup);
         setNewStartup({
@@ -158,7 +153,6 @@ export default function FounderStartups() {
         setShowForm(true);
     };
 
-    // handleClose accepts optional boolean to skip refetch when closing (default true refetch)
     const handleClose = (refetch = true) => {
         setShowForm(false);
         setEditingStartup(null);
@@ -174,265 +168,325 @@ export default function FounderStartups() {
         return null;
     };
 
-    // support both amount_raised and raised_amount keys (backend has used both in conversation)
-    const getRaised = (s) => {
-        return Number(s.amount_raised ?? s.raised_amount ?? 0);
-    };
-
+    const getRaised = (s) => Number(s.amount_raised ?? s.raised_amount ?? 0);
     const fullyFunded = (s) => getRaised(s) >= Number(s.funding_goal || 0);
+
+
+    const filtered = startups.filter((s) => {
+        if (!query.trim()) return true;
+        const q = query.toLowerCase();
+        return (
+            String(s.name || "").toLowerCase().includes(q) ||
+            String(s.industry || "").toLowerCase().includes(q) ||
+            String(s.stage || "").toLowerCase().includes(q)
+        );
+    });
+
+    const cardVariant = { hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } };
+    const modalVariant = { hidden: { opacity: 0, scale: 0.98 }, visible: { opacity: 1, scale: 1 } };
 
     return (
         <DashboardLayout>
-            <div className="max-w-6xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
+            <div className="max-w-7xl mx-auto p-6">
+                {/* Header */}
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+                    <div>
+                        <h1 className="text-4xl font-bold text-white">My Startups</h1>
+                        <p className="text-sm text-gray-400 mt-2 max-w-xl">Manage your portfolio, pitch decks and fundraising progress — a clean place to track progress and invite investors.</p>
+                    </div>
+
                     <div className="flex items-center gap-4">
-                        <h1 className="text-2xl font-bold text-white">My Startups</h1>
-                        <button
-                            onClick={() => fetchStartups()}
-                            title="Refresh"
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/6 text-white hover:bg-white/10"
-                        >
-                            <RefreshCw size={16} /> {fetching ? "Refreshing..." : "Refresh"}
-                        </button>
-                    </div>
-
-                    <Button className="gap-2" variant="primary" onClick={() => setShowForm(true)}>
-                        <PlusCircle size={20} />
-                        Add Startup
-                    </Button>
-                </div>
-
-                {startups.length === 0 && (
-                    <div className="flex flex-col items-center justify-center mt-20 text-center text-gray-400">
-                        <p className="text-lg">No startups added yet 🚀</p>
-                        <p className="mt-2">
-                            Click{" "}
-                            <span onClick={() => setShowForm(true)} className="text-indigo-400 hover:underline cursor-pointer">
-                                Add Startup
-                            </span>{" "}
-                            to create your first one.
-                        </p>
-                    </div>
-                )}
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {startups.map((startup) => {
-                        const raised = getRaised(startup);
-                        const goal = Number(startup.funding_goal || 0);
-                        const remaining = Math.max(goal - raised, 0);
-
-                        return (
-                            <div
-                                key={startup.id}
-                                className="bg-[#1A1F33] rounded-2xl p-6 shadow-lg border border-white/10 hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h2 className="text-2xl font-semibold text-white">{startup.name}</h2>
-                                        {startup.industry && <p className="text-gray-400 text-base">{startup.industry}</p>}
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => handleEdit(startup)}
-                                            className="p-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400"
-                                        >
-                                            <Pencil size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(startup.id)}
-                                            className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-wrap gap-3 mb-4">
-                                    {startup.stage && (
-                                        <span className="px-3 py-1 text-sm rounded-full bg-indigo-600/20 text-indigo-300">{startup.stage}</span>
-                                    )}
-                                    <span className="px-3 py-1 text-sm rounded-full bg-teal-600/20 text-teal-300 font-medium">
-                                        💰 Goal: ₹{goal}
-                                    </span>
-                                    <span className="px-3 py-1 text-sm rounded-full bg-green-600/20 text-green-300 font-medium">
-                                        ✅ Raised: ₹{raised}
-                                    </span>
-                                    <span className="px-3 py-1 text-sm rounded-full bg-yellow-600/20 text-yellow-300">
-                                        ⏳ Remaining: ₹{remaining}
-                                    </span>
-                                </div>
-
-                                {startup.description && (
-                                    <p className="text-gray-300 text-base leading-relaxed mb-4">{startup.description}</p>
-                                )}
-
-                                <div className="space-y-1 text-gray-400 text-sm mb-4">
-                                    {startup.team_size && <p>👥 Team: {startup.team_size}</p>}
-                                    {startup.location && <p>📍 {startup.location}</p>}
-                                    {startup.equity && <p>📊 Equity Offered: {startup.equity}%</p>}
-                                    {startup.valuation && <p>💎 Valuation: ₹{startup.valuation}</p>}
-                                </div>
-
-                                <div className="w-full bg-white/10 rounded-full h-2 mb-4">
-                                    <div
-                                        className={`h-2 rounded-full ${fullyFunded(startup) ? "bg-green-500" : "bg-indigo-500"}`}
-                                        style={{ width: `${Math.min((raised / (goal || 1)) * 100, 100)}%` }}
-                                    />
-                                </div>
-
-                                <div className="flex gap-3 pt-2">
-                                    {startup.website && (
-                                        <a
-                                            href={externalUrl(startup.website)}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded-lg bg-blue-600/20 text-blue-300 hover:bg-blue-600/30"
-                                        >
-                                            <Globe size={16} /> Website
-                                        </a>
-                                    )}
-                                    {startup.pitch_deck && (
-                                        <a
-                                            href={fileUrl(startup.pitch_deck)}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded-lg bg-purple-600/20 text-purple-300 hover:bg-purple-600/30"
-                                        >
-                                            <FileText size={16} /> Pitch Deck
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {showForm && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-                        <div className="bg-[#121826] p-6 rounded-2xl w-full max-w-lg shadow-lg relative max-h-[90vh] overflow-y-auto">
-                            <button onClick={() => handleClose()} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-                                <X size={20} />
-                            </button>
-                            <h2 className="text-xl font-bold text-white mb-5">{editingStartup ? "Edit Startup" : "Add Startup"}</h2>
-
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <input
-                                    type="text"
-                                    placeholder="Startup Name"
-                                    value={newStartup.name}
-                                    onChange={(e) => setNewStartup({ ...newStartup, name: e.target.value })}
-                                    className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
-                                />
-                                {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
-
-                                <input
-                                    type="text"
-                                    placeholder="Industry"
-                                    value={newStartup.industry}
-                                    onChange={(e) => setNewStartup({ ...newStartup, industry: e.target.value })}
-                                    className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
-                                />
-                                <label className="block text-sm text-gray-300">Stage</label>
-                                <select
-                                    value={newStartup.stage}
-                                    onChange={(e) => setNewStartup({ ...newStartup, stage: e.target.value })}
-                                    className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
-                                >
-                                    <option value="">Select Stage</option>
-                                    <option value="Idea">💡 Idea – Just a concept, not validated yet</option>
-                                    <option value="Prototype">🔧 Prototype – Early mockups or demo</option>
-                                    <option value="MVP">🚀 MVP – Minimal product live with users</option>
-                                    <option value="Seed">🌱 Seed – Initial funding & growth</option>
-                                    <option value="Series A">📈 Series A – Scaling business model</option>
-                                    <option value="Series B">🏆 Series B – Market expansion stage</option>
-                                </select>
-                                {errors.stage && <p className="text-red-500 text-xs">{errors.stage}</p>}
-
-                                <input
-                                    type="number"
-                                    placeholder="Funding Goal (INR)"
-                                    value={newStartup.funding_goal}
-                                    onChange={(e) => setNewStartup({ ...newStartup, funding_goal: e.target.value })}
-                                    className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
-                                />
-                                {errors.funding_goal && <p className="text-red-500 text-xs">{errors.funding_goal}</p>}
-
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="Equity Offered (%)"
-                                    value={newStartup.equity}
-                                    onChange={(e) => setNewStartup({ ...newStartup, equity: e.target.value })}
-                                    className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
-                                    required
-                                />
-                                {errors.equity && <p className="text-red-500 text-xs">{errors.equity}</p>}
-
-                                {calcValuation() && <p className="text-green-400 text-sm">Estimated Valuation: ₹{calcValuation().toLocaleString()}</p>}
-
-                                <input
-                                    type="number"
-                                    placeholder="Team Size"
-                                    value={newStartup.team_size}
-                                    onChange={(e) => setNewStartup({ ...newStartup, team_size: e.target.value })}
-                                    className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
-                                />
-
-                                <textarea
-                                    placeholder="Short Description"
-                                    rows="3"
-                                    value={newStartup.description}
-                                    onChange={(e) => setNewStartup({ ...newStartup, description: e.target.value })}
-                                    className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
-                                />
-
-                                <input
-                                    type="url"
-                                    placeholder="Website / Product Link"
-                                    value={newStartup.website}
-                                    onChange={(e) => setNewStartup({ ...newStartup, website: e.target.value })}
-                                    className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
-                                />
-
-                                <input
-                                    type="text"
-                                    placeholder="Location"
-                                    value={newStartup.location}
-                                    onChange={(e) => setNewStartup({ ...newStartup, location: e.target.value })}
-                                    className="w-full p-3 rounded-xl bg-[#1A2236] text-white"
-                                />
-
-                                {editingStartup?.pitch_deck && !newStartup.pitch_deck && (
-                                    <p className="text-sm text-gray-400">
-                                        Current file:{" "}
-                                        <a href={fileUrl(editingStartup.pitch_deck)} target="_blank" rel="noreferrer" className="text-purple-400 hover:underline">
-                                            View Pitch Deck
-                                        </a>
-                                    </p>
-                                )}
-
-                                <label className="block text-sm text-gray-300">Pitch Deck (PDF/PPT) *</label>
-                                <input
-                                    type="file"
-                                    accept=".pdf,.ppt,.pptx"
-                                    onChange={(e) => setNewStartup({ ...newStartup, pitch_deck: e.target.files[0] })}
-                                    className="w-full p-2 rounded-xl bg-[#1A2236] text-white"
-                                    required={!editingStartup}
-                                />
-                                {errors.pitch_deck && <p className="text-red-500 text-xs">{errors.pitch_deck}</p>}
-
-                                <div className="flex justify-end gap-3 pt-2">
-                                    <Button type="button" variant="secondary" onClick={() => handleClose()}>
-                                        Cancel
-                                    </Button>
-                                    <Button type="submit" disabled={loading}>
-                                        {loading ? "Saving..." : "Save"}
-                                    </Button>
-                                </div>
-                            </form>
+                        <div className="relative">
+                            <Search className="absolute left-4 top-3 text-gray-400" size={18} />
+                            <input
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                placeholder="Search startups, industry or stage"
+                                className="pl-12 pr-4 py-3 rounded-full bg-[#0F1724] border border-white/6 text-sm text-gray-200 w-[280px] focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                            />
                         </div>
+
+                        <Button
+                            onClick={() => setShowForm(true)}
+                            variant="primary"
+                            size="lg"
+                            className="fixed bottom-8 right-8 rounded-full px-6 py-3 gap-2 z-100 shadow-xl"
+                        >
+                            <PlusCircle size={20} />
+                            <span>Add Startup</span>
+                        </Button>
+
                     </div>
-                )}
+                </div>
+
+                {/* Grid: fewer columns -> bigger, more spacious cards */}
+                <AnimatePresence>
+                    {filtered.length === 0 ? (
+                        <motion.div
+                            key="empty"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex flex-col items-center justify-center mt-20 text-center text-gray-400"
+                        >
+                            <h3 className="text-lg">No startups added yet</h3>
+                            <p className="mt-2 text-sm">Click <button onClick={() => setShowForm(true)} className="text-indigo-400 hover:underline">Add Startup</button> to create your first one.</p>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            layout
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8"
+                        >
+                            {filtered.map((startup, idx) => {
+                                const raised = getRaised(startup);
+                                const goal = Number(startup.funding_goal || 0);
+                                const progress = Math.min(goal === 0 ? 0 : (raised / goal) * 100, 100);
+
+                                return (
+                                    <motion.article
+                                        key={startup.id}
+                                        initial="hidden"
+                                        animate="visible"
+                                        variants={cardVariant}
+                                        transition={{ duration: 0.28, delay: idx * 0.03 }}
+                                        whileHover={{ y: -6, boxShadow: "0 12px 30px rgba(0,0,0,0.4)" }}
+                                        className="bg-gradient-to-b from-[#0F1622] to-[#0B1220] border border-white/6 rounded-2xl p-6 min-h-[220px] shadow-md hover:shadow-2xl transition-transform duration-300"
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="min-w-0">
+                                                <h3 className="text-lg md:text-xl font-semibold text-white truncate max-w-[420px]">{startup.name}</h3>
+                                                {startup.industry && <p className="text-sm text-gray-400 mt-1">{startup.industry}</p>}
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <Button onClick={() => handleEdit(startup)} variant="ghost" size="icon" className="p-2 rounded-md bg-indigo-600/12 hover:bg-indigo-600/20 text-indigo-300" title="Edit">
+                                                    <Pencil size={15} />
+                                                </Button>
+
+
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-3 mt-4">
+                                            {startup.stage && (
+                                                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-600/10 text-indigo-300 text-sm">
+                                                    <Rocket size={14} /> <span className="truncate">{startup.stage}</span>
+                                                </span>
+                                            )}
+
+                                            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/6 text-sm text-teal-200">
+                                                <Banknote size={14} /> Goal: ₹{Number(startup.funding_goal || 0).toLocaleString()}
+                                            </span>
+
+                                            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/6 text-sm text-green-200">
+                                                <CheckCircle size={14} /> Raised: ₹{raised.toLocaleString()}
+                                            </span>
+                                        </div>
+
+                                        {startup.description && <p className="mt-4 text-sm text-gray-300">{startup.description}</p>}
+
+                                        <div className="mt-5">
+                                            <div className="w-full h-3 rounded-full bg-white/6 overflow-hidden">
+                                                <div
+                                                    className={`h-3 rounded-full ${fullyFunded(startup) ? "bg-green-400" : "bg-indigo-500"}`}
+                                                    style={{ width: `${progress}%` }}
+                                                />
+                                            </div>
+
+                                            <div className="flex items-center justify-between mt-4 text-sm text-gray-400">
+                                                <div className="flex items-center gap-4">
+                                                    {startup.team_size && (
+                                                        <span className="inline-flex items-center gap-2">
+                                                            <Users size={15} /> {startup.team_size}
+                                                        </span>
+                                                    )}
+                                                    {startup.location && (
+                                                        <span className="inline-flex items-center gap-2">
+                                                            <MapPin size={15} /> {startup.location}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center gap-4">
+                                                    {startup.website && (
+                                                        <a href={externalUrl(startup.website)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-300 hover:underline">
+                                                            <Globe size={15} /> Website
+                                                        </a>
+                                                    )}
+                                                    {startup.pitch_deck && (
+                                                        <a href={fileUrl(startup.pitch_deck)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm text-purple-300 hover:underline">
+                                                            <FileText size={15} /> Pitch
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.article>
+                                );
+                            })}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Modal Form */}
+                <AnimatePresence>
+                    {showForm && (
+                        <motion.div
+                            className="fixed inset-0 z-50 grid place-items-center bg-black/50 backdrop-blur-sm px-4"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <motion.div
+                                className="w-full max-w-2xl bg-[#0B1220] rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]"
+                                variants={modalVariant}
+                                initial="hidden"
+                                animate="visible"
+                                exit="hidden"
+                            >
+                                <div className="flex items-start justify-between">
+                                    <h2 className="text-xl font-semibold text-white">{editingStartup ? "Edit Startup" : "Add Startup"}</h2>
+                                    <button onClick={() => handleClose()} className="text-gray-400 hover:text-white p-2 rounded-full">
+                                        <X size={18} />
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="text-xs text-gray-300 flex items-center gap-2">Name</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Startup Name"
+                                                value={newStartup.name}
+                                                onChange={(e) => setNewStartup({ ...newStartup, name: e.target.value })}
+                                                className="w-full p-3 rounded-xl bg-[#0F1724] text-white"
+                                            />
+                                            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="text-xs text-gray-300">Stage</label>
+                                            <select
+                                                value={newStartup.stage}
+                                                onChange={(e) => setNewStartup({ ...newStartup, stage: e.target.value })}
+                                                className="w-full p-3 rounded-xl bg-[#0F1724] text-white"
+                                            >
+                                                <option value="">Select Stage</option>
+                                                <option value="Idea">Idea</option>
+                                                <option value="Prototype">Prototype</option>
+                                                <option value="MVP">MVP</option>
+                                                <option value="Seed">Seed</option>
+                                                <option value="Series A">Series A</option>
+                                                <option value="Series B">Series B</option>
+                                            </select>
+                                            {errors.stage && <p className="text-red-500 text-xs mt-1">{errors.stage}</p>}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <div>
+                                            <label className="text-xs text-gray-300">Funding Goal (INR)</label>
+                                            <input
+                                                type="number"
+                                                placeholder="0"
+                                                value={newStartup.funding_goal}
+                                                onChange={(e) => setNewStartup({ ...newStartup, funding_goal: e.target.value })}
+                                                className="w-full p-3 rounded-xl bg-[#0F1724] text-white"
+                                            />
+                                            {errors.funding_goal && <p className="text-red-500 text-xs mt-1">{errors.funding_goal}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="text-xs text-gray-300">Equity (%)</label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                placeholder="e.g. 10"
+                                                value={newStartup.equity}
+                                                onChange={(e) => setNewStartup({ ...newStartup, equity: e.target.value })}
+                                                className="w-full p-3 rounded-xl bg-[#0F1724] text-white"
+                                            />
+                                            {errors.equity && <p className="text-red-500 text-xs mt-1">{errors.equity}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="text-xs text-gray-300">Team Size</label>
+                                            <input
+                                                type="number"
+                                                placeholder="e.g. 5"
+                                                value={newStartup.team_size}
+                                                onChange={(e) => setNewStartup({ ...newStartup, team_size: e.target.value })}
+                                                className="w-full p-3 rounded-xl bg-[#0F1724] text-white"
+                                            />
+                                            {errors.team_size && <p className="text-red-500 text-xs mt-1">{errors.team_size}</p>}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs text-gray-300">Short Description</label>
+                                        <textarea
+                                            rows={3}
+                                            value={newStartup.description}
+                                            onChange={(e) => setNewStartup({ ...newStartup, description: e.target.value })}
+                                            className="w-full p-3 rounded-xl bg-[#0F1724] text-white"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="text-xs text-gray-300">Website</label>
+                                            <input
+                                                type="url"
+                                                placeholder="https://yourproduct.com"
+                                                value={newStartup.website}
+                                                onChange={(e) => setNewStartup({ ...newStartup, website: e.target.value })}
+                                                className="w-full p-3 rounded-xl bg-[#0F1724] text-white"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-xs text-gray-300">Location</label>
+                                            <input
+                                                type="text"
+                                                placeholder="City, Country"
+                                                value={newStartup.location}
+                                                onChange={(e) => setNewStartup({ ...newStartup, location: e.target.value })}
+                                                className="w-full p-3 rounded-xl bg-[#0F1724] text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {editingStartup?.pitch_deck && !newStartup.pitch_deck && (
+                                        <p className="text-sm text-gray-400">Current file: <a href={fileUrl(editingStartup.pitch_deck)} target="_blank" rel="noreferrer" className="text-purple-400 hover:underline">View Pitch Deck</a></p>
+                                    )}
+
+                                    <div>
+                                        <label className="text-xs text-gray-300">Pitch Deck (PDF/PPT)</label>
+                                        <input
+                                            type="file"
+                                            accept=".pdf,.ppt,.pptx"
+                                            onChange={(e) => setNewStartup({ ...newStartup, pitch_deck: e.target.files[0] })}
+                                            className="w-full p-2 rounded-xl bg-[#0F1724] text-white"
+                                        />
+                                        {errors.pitch_deck && <p className="text-red-500 text-xs mt-1">{errors.pitch_deck}</p>}
+                                    </div>
+
+                                    {calcValuation() && <p className="text-green-400 text-sm">Estimated Valuation: ₹{calcValuation().toLocaleString()}</p>}
+
+                                    <div className="flex items-center justify-end gap-3 pt-2">
+                                        <Button type="button" variant="secondary" onClick={() => handleClose()} size="default">
+                                            Cancel
+                                        </Button>
+                                        <Button type="submit" disabled={loading} variant="primary" size="lg">
+                                            {loading ? "Saving..." : "Save"}
+                                        </Button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </DashboardLayout>
     );
