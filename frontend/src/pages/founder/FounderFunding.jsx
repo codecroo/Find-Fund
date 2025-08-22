@@ -100,64 +100,68 @@ const FounderFunding = () => {
 
     return (
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto p-6">
-                {/* Header (kept consistent with My Startups) */}
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6">
+                {/* Header (responsive) */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-4xl font-bold text-white">Funding Requests</h1>
-                        <p className="text-sm text-gray-400 mt-2 max-w-xl">
-                            Review and approve incoming investor requests — keep funding moving smoothly.
-                        </p>
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Funding Requests</h1>
+                        <p className="text-sm text-gray-400 mt-2 max-w-xl">Review and approve incoming investor requests — keep funding moving smoothly.</p>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="relative">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                        <div className="relative w-full sm:w-[320px]">
                             <Search className="absolute left-4 top-3 text-gray-400" size={18} />
                             <input
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Search by startup or investor"
-                                className="pl-12 pr-4 py-3 rounded-full bg-[#0F1724] border border-white/6 text-sm text-gray-200 w-[280px] focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                                className="pl-12 pr-4 py-3 rounded-full bg-[#0F1724] border border-white/6 text-sm text-gray-200 w-full focus:outline-none focus:ring-2 focus:ring-indigo-600"
                             />
                         </div>
 
-                        <Button onClick={() => fetchRequests()} variant="secondary" size="default" className="flex items-center gap-2">
+                        <Button onClick={() => fetchRequests()} variant="secondary" size="default" className="flex items-center gap-2 w-full sm:w-auto justify-center">
                             <RefreshCw size={16} />
                             <span>{fetching ? "Refreshing" : "Refresh"}</span>
                         </Button>
                     </div>
                 </div>
 
-                {/* Requests Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Requests Grid: single column on mobile, two on md, three on xl */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filtered.length > 0 ? (
                         filtered.map((req) => (
                             <div
                                 key={req.id}
-                                className="bg-gradient-to-br from-[#0E1220] to-[#121826] p-8 rounded-2xl shadow-lg border border-white/10"
+                                className="bg-gradient-to-br from-[#0E1220] to-[#121826] p-6 sm:p-8 rounded-2xl shadow-lg border border-white/10 flex flex-col justify-between"
                             >
-                                <h3 className="text-xl font-bold text-white mb-4">{req.startup?.name || "Startup"}</h3>
+                                <div>
+                                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-3 truncate">{req.startup?.name || "Startup"}</h3>
 
-                                <div className="space-y-2 text-gray-200">
-                                    <p className="flex items-center gap-2">
-                                        <Users size={18} className="text-indigo-400" />
-                                        Founder: <span className="font-medium">{req.startup?.founder?.full_name || "—"}</span>
-                                    </p>
+                                    <div className="space-y-2 text-gray-200">
+                                        <p className="flex items-center gap-2">
+                                            <Users size={18} className="text-indigo-400" />
+                                            Founder: <span className="font-medium">{req.startup?.founder?.full_name || "—"}</span>
+                                        </p>
 
-                              
-                                    <p className="flex items-center gap-2 text-lg font-semibold text-green-400 mt-4">
-                                        <Banknote size={18} /> ₹{req.amount}
-                                    </p>
+                                        <p className="flex items-center gap-2">
+                                            <UserCheck size={18} className="text-green-400" />
+                                            Investor: <span className="font-medium">{req.investor?.full_name || "—"}</span>
+                                        </p>
+
+                                        <p className="flex items-center gap-2 text-lg font-semibold text-green-400 mt-3">
+                                            <Banknote size={18} /> ₹{req.amount}
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <div className="mt-6">
                                     {req.status === "pending" ? (
-                                        <div className="flex gap-4">
+                                        <div className="flex flex-col sm:flex-row gap-3">
                                             <Button
                                                 onClick={() => handleDecision(req.id, "accepted")}
                                                 disabled={loading}
                                                 variant="primary"
-                                                className="flex items-center gap-2"
+                                                className="flex-1 flex items-center gap-2 justify-center"
                                             >
                                                 <UserCheck size={16} /> Accept
                                             </Button>
@@ -165,7 +169,7 @@ const FounderFunding = () => {
                                                 onClick={() => handleDecision(req.id, "rejected")}
                                                 disabled={loading}
                                                 variant="danger"
-                                                className="flex items-center gap-2"
+                                                className="flex-1 flex items-center gap-2 justify-center"
                                             >
                                                 <UserX size={16} /> Reject
                                             </Button>
@@ -184,13 +188,15 @@ const FounderFunding = () => {
                             </div>
                         ))
                     ) : (
-                        <p className="text-gray-500 text-lg">No funding requests yet</p>
+                        <div className="col-span-full text-center py-12 text-gray-500">
+                            <p className="text-lg">No funding requests yet</p>
+                        </div>
                     )}
                 </div>
             </div>
 
             {/* COMPACT TOASTS (top-right) */}
-            <div className="fixed top-6 right-6 z-50 flex flex-col gap-3 items-end px-2">
+            <div className="fixed top-4 right-4 z-50 flex flex-col gap-3 items-end px-2">
                 {toasts.map((t) => (
                     <div
                         key={t.id}

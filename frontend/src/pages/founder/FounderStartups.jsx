@@ -34,7 +34,7 @@ export default function FounderStartups() {
 
     useEffect(() => {
         fetchStartups();
-        const id = setInterval(() => fetchStartups().catch(() => { }), 20000);
+        const id = setInterval(() => fetchStartups().catch(() => { }), 200000);
         return () => clearInterval(id);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -214,18 +214,18 @@ export default function FounderStartups() {
                 {/* header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-4xl font-bold text-white">My Startups</h1>
+                        <h1 className="text-3xl sm:text-4xl font-bold text-white">My Startups</h1>
                         <p className="text-sm text-gray-400 mt-2 max-w-xl">Manage your portfolio, pitch decks and fundraising progress.</p>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="relative">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div className="relative w-full sm:w-[280px]">
                             <Search className="absolute left-4 top-3 text-gray-400" size={18} />
                             <input
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Search startups, industry or stage"
-                                className="pl-12 pr-4 py-3 rounded-full bg-[#0F1724] border border-white/6 text-sm text-gray-200 w-[280px] focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                                className="pl-12 pr-4 py-3 rounded-full bg-[#0F1724] border border-white/6 text-sm text-gray-200 w-full focus:outline-none focus:ring-2 focus:ring-indigo-600"
                             />
                         </div>
 
@@ -237,15 +237,16 @@ export default function FounderStartups() {
                             }}
                             variant="primary"
                             size="lg"
-                            className="rounded-full px-4 py-2 gap-2"
+                            className="rounded-full px-4 py-2 gap-2 w-full sm:w-auto"
                         >
-                            <PlusCircle size={18} /> Add Startup
+                            <PlusCircle size={18} /> <span className="hidden sm:inline">Add Startup</span>
+                            <span className="sm:hidden">Add</span>
                         </Button>
                     </div>
                 </div>
 
-                {/* grid two columns */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                {/* grid two columns on md, single column on mobile */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
                     {loading ? (
                         <div className="col-span-full text-center text-gray-400 py-10">Loading…</div>
                     ) : filtered.length === 0 ? (
@@ -268,7 +269,7 @@ export default function FounderStartups() {
                             const valuation = computeValuation(startup);
 
                             return (
-                                <article key={startup.id} className="bg-gradient-to-b from-[#0F1622] to-[#0B1220] border border-white/6 rounded-2xl p-6 min-h-[220px] shadow-md">
+                                <article key={startup.id} className="bg-gradient-to-b from-[#0F1622] to-[#0B1220] border border-white/6 rounded-2xl p-6 shadow-md md:min-h-[220px]">
                                     <div className="flex items-start justify-between">
                                         <div className="min-w-0">
                                             <h3 className="text-lg md:text-xl font-semibold text-white truncate">{startup.name}</h3>
@@ -283,7 +284,7 @@ export default function FounderStartups() {
                                     </div>
 
                                     {/* equity + valuation + progress label */}
-                                    <div className="flex items-center gap-3 mt-4">
+                                    <div className="flex items-center gap-3 mt-4 flex-wrap">
                                         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-600/12 text-pink-300 text-sm">
                                             <Percent size={14} /> <span className="font-medium">{startup.equity ? `${Number(startup.equity).toFixed(2)}%` : "—"}</span>
                                             <span className="text-xs text-gray-400 ml-2">equity</span>
@@ -337,7 +338,7 @@ export default function FounderStartups() {
                                     {/* progress bar - SIMPLE single color */}
                                     <div className="mt-4">
                                         <div className="w-full bg-white/6 rounded-full h-3 overflow-hidden">
-                                            <div className="h-3 rounded-full bg-indigo-500 transition-all duration-300" style={{ width: `${progress}%` }} />
+                                            <div className="h-3 rounded-full bg-indigo-500 transition-all duration-300" style={{ width: `${Math.max(0, Math.min(100, progress))}%` }} />
                                         </div>
                                         <div className="mt-2 text-xs text-gray-400 flex items-center justify-between">
                                             <div>Funded: <span className="text-white font-medium ml-1">{progress.toFixed(0)}%</span></div>
@@ -370,7 +371,7 @@ export default function FounderStartups() {
                 {/* modal form (complete) */}
                 {showForm && (
                     <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 px-4">
-                        <div className="w-full max-w-2xl bg-[#0B1220] rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh] border border-white/6">
+                        <div className="w-full max-w-[calc(100%-32px)] sm:max-w-2xl bg-[#0B1220] rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh] border border-white/6">
                             <div className="flex items-start justify-between">
                                 <h2 className="text-xl font-semibold text-white">{editingStartup ? "Edit Startup" : "Add Startup"}</h2>
                                 <button onClick={() => handleClose(false)} className="text-gray-400 hover:text-white p-2 rounded-full">
@@ -510,18 +511,18 @@ export default function FounderStartups() {
 
                                 {newStartup.funding_goal && newStartup.equity && (
                                     <div className="text-sm text-green-400">
-                                        Estimated valuation:{" "}
+                                        Estimated valuation: {" "}
                                         <strong className="text-white">
                                             {shortINR(Math.round(Number(newStartup.funding_goal) / (Number(newStartup.equity) / 100)))}
                                         </strong>
                                     </div>
                                 )}
 
-                                <div className="flex items-center justify-end gap-3 pt-2">
-                                    <Button type="button" variant="secondary" onClick={() => handleClose(false)}>
+                                <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
+                                    <Button type="button" variant="secondary" onClick={() => handleClose(false)} className="w-full sm:w-auto">
                                         Cancel
                                     </Button>
-                                    <Button type="submit" variant="primary" disabled={!isFormValid || loading}>
+                                    <Button type="submit" variant="primary" disabled={!isFormValid || loading} className="w-full sm:w-auto">
                                         {editingStartup ? (loading ? "Saving..." : "Save changes") : loading ? "Saving..." : "Create Startup"}
                                     </Button>
                                 </div>

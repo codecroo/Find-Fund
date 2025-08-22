@@ -84,7 +84,6 @@ export default function BrowseStartups() {
     const fetchSaved = async () => {
         try {
             const res = await api.get("investors/saved/");
-            // robustly extract startup ids from different possible shapes
             const ids =
                 Array.isArray(res.data)
                     ? res.data
@@ -139,12 +138,10 @@ export default function BrowseStartups() {
             });
 
             try {
-                // backend expects DELETE with body { startup }
                 await api.delete("investors/saved/", { data: { startup: startupId } });
                 addToast("success", "Removed", "Startup removed from saved list");
             } catch (err) {
                 console.error("Failed to unsave", err?.response ?? err);
-                // rollback
                 setSavedSet(backup);
                 const server = err?.response?.data || err?.message || "Server error";
                 addToast("error", "Unsave failed", typeof server === "string" ? server : JSON.stringify(server));
@@ -225,10 +222,10 @@ export default function BrowseStartups() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
                     <div className="max-w-2xl">
-                        <h1 className="text-4xl font-bold text-white">Browse Startups</h1>
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">Browse Startups</h1>
                         <p className="text-sm text-gray-400 mt-2 max-w-xl">
                             Explore startups seeking funding. Save promising ones, preview estimated equity and send a request.
                         </p>
@@ -240,8 +237,8 @@ export default function BrowseStartups() {
                 ) : startups.length === 0 ? (
                     <p className="text-center text-gray-400">No startups available 🚀</p>
                 ) : (
-                    /* 2 columns on md+ */
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    /* responsive grid: 1 / 2 / 3 / 4 columns depending on screen */
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         {startups.map((startup) => {
                             const raised = getRaised(startup);
                             const goal = Number(startup.funding_goal || 0);
@@ -259,60 +256,60 @@ export default function BrowseStartups() {
                                     initial={{ opacity: 0, y: 6 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.26 }}
-                                    className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] rounded-2xl p-8 shadow-lg border border-white/6 min-h-[240px] flex flex-col justify-between overflow-hidden"
+                                    className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] rounded-2xl p-4 sm:p-6 md:p-7 shadow-lg border border-white/6 min-h-[240px] flex flex-col justify-between overflow-hidden"
                                 >
                                     <div>
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="min-w-0">
-                                                <h2 className="text-2xl font-semibold text-white truncate">{startup.name}</h2>
-                                                {startup.industry && <p className="text-gray-400 text-sm mt-1">{startup.industry}</p>}
+                                                <h2 className="text-lg sm:text-2xl font-semibold text-white truncate">{startup.name}</h2>
+                                                {startup.industry && <p className="text-gray-400 text-sm mt-1 truncate">{startup.industry}</p>}
                                             </div>
 
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2">
                                                 <Button
                                                     onClick={() => handleToggleSave(startup.id)}
                                                     variant={isSaved ? "secondary" : "ghost"}
                                                     size="default"
-                                                    className="px-4 py-2 rounded-md flex items-center gap-2"
+                                                    className="px-3 py-1 rounded-md flex items-center gap-2"
                                                     title={isSaved ? "Unsave" : "Save"}
                                                 >
                                                     <Bookmark size={16} />
-                                                    <span>{isSaved ? "Saved" : "Save"}</span>
+                                                    <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
                                                 </Button>
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-wrap gap-3 mt-5 mb-4">
+                                        <div className="flex flex-wrap gap-3 mt-4 mb-3">
                                             {startup.stage && (
-                                                <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-indigo-600/10 text-indigo-300">
+                                                <span className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-full bg-indigo-600/10 text-indigo-300">
                                                     <Clock size={14} /> <span>{startup.stage}</span>
                                                 </span>
                                             )}
 
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-teal-600/10 text-teal-200 font-semibold">
+                                            <span className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-full bg-teal-600/10 text-teal-200 font-semibold">
                                                 <Banknote size={14} /> {goal ? `₹${goal.toLocaleString("en-IN")} goal` : "Goal unset"}
                                             </span>
 
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-green-600/10 text-green-200 font-semibold">
+                                            <span className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-full bg-green-600/10 text-green-200 font-semibold">
                                                 <CheckCircle size={14} /> Raised ₹{raised.toLocaleString("en-IN")}
                                             </span>
 
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-yellow-600/10 text-yellow-200">
+                                            <span className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-full bg-yellow-600/10 text-yellow-200">
                                                 <Clock size={14} /> Remaining ₹{remaining.toLocaleString("en-IN")}
                                             </span>
 
                                             {startup.equity && (
-                                                <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-pink-600/10 text-pink-200">
+                                                <span className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-full bg-pink-600/10 text-pink-200">
                                                     <Percent size={14} /> {startup.equity}% for full goal
                                                 </span>
                                             )}
                                         </div>
 
                                         {startup.description && (
-                                            <p className="text-gray-300 text-sm leading-relaxed line-clamp-3 mb-5">{startup.description}</p>
+                                            <p className="text-gray-300 text-sm leading-relaxed line-clamp-3 mb-4">{startup.description}</p>
                                         )}
 
-                                        <div className="grid grid-cols-1 gap-3 text-sm text-gray-300 mb-5">
+                                        <div className="grid grid-cols-1 gap-2 text-sm text-gray-300 mb-4">
                                             {startup.team_size && (
                                                 <div className="flex items-center gap-2 min-w-0">
                                                     <Users size={14} className="flex-shrink-0 text-indigo-300" />
@@ -338,20 +335,21 @@ export default function BrowseStartups() {
                                                     <Clock size={14} className="flex-shrink-0 text-yellow-300" />
                                                     <span className="truncate">
                                                         <span className="text-white/90 font-medium">Launched:</span>{" "}
-                                                        <span className="ml-1">{new Date(startup.created_at).toLocaleDateString()}</span>
+                                                        <span className="ml-1">{new Date(startup.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                                                     </span>
                                                 </div>
                                             )}
                                         </div>
 
 
-                                        <div className="flex gap-4 mb-5 flex-wrap">
+                                        <div className="flex gap-3 mb-3 flex-wrap">
                                             {startup.website && (
                                                 <a
                                                     href={externalUrl(startup.website)}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600/10 text-blue-300 hover:bg-blue-600/20 text-sm"
+                                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600/10 text-blue-300 hover:bg-blue-600/20 text-sm truncate"
+                                                    title={startup.website}
                                                 >
                                                     <Globe size={14} /> Website
                                                 </a>
@@ -362,7 +360,8 @@ export default function BrowseStartups() {
                                                     href={fileUrl(startup.pitch_deck)}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600/10 text-purple-300 hover:bg-purple-600/20 text-sm"
+                                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-600/10 text-purple-300 hover:bg-purple-600/20 text-sm truncate"
+                                                    title={startup.pitch_deck}
                                                 >
                                                     <FileText size={14} /> Pitch Deck
                                                 </a>
@@ -370,81 +369,77 @@ export default function BrowseStartups() {
                                         </div>
                                     </div>
 
-                                    <div className="mt-2">
-                                        <Button
-                                            onClick={() => setSelectedFounder(startup.founder)}
-                                            variant="outline"
-                                            size="default"
-                                            className="flex items-center gap-2"
-                                        >
-                                            <User size={16} /> View Founder
-                                        </Button>
-                                        <div className="flex gap-3 items-center">
+                                    <div className="mt-3">
+                                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-3">
+                                            <div className="flex-shrink-0">
+                                                <Button
+                                                    onClick={() => setSelectedFounder(startup.founder)}
+                                                    variant="outline"
+                                                    size="default"
+                                                    className="flex items-center gap-2 w-full sm:w-auto"
+                                                >
+                                                    <User size={16} /> <span className="hidden sm:inline">View Founder</span>
+                                                </Button>
+                                            </div>
 
                                             {!isRequested ? (
-                                                <div className="ml-auto min-w-0 w-full">
-                                                    <form
-                                                        onSubmit={(e) => {
-                                                            e.preventDefault();
-                                                            const amountVal = amountInputs[startup.id] ?? e.target.amount.value;
-                                                            handleSendRequest(startup.id, amountVal, () => e.target.reset());
-                                                        }}
-                                                        className="mt-3 w-full"
-                                                    >
-                                                        {/* amount input: full width but limited max width */}
-                                                        <div className="w-full max-w-md">
-                                                            <input
-                                                                name="amount"
-                                                                value={amountInputs[startup.id] ?? ""}
-                                                                onChange={(e) => handleAmountChange(startup.id, e.target.value)}
-                                                                placeholder={
-                                                                    fullyFunded(startup)
-                                                                        ? "Fully funded"
-                                                                        : remaining > 0
-                                                                            ? `Amount (max ₹${remaining.toLocaleString("en-IN")})`
-                                                                            : "Amount"
-                                                                }
-                                                                className="w-full px-4 py-2 rounded-xl bg-[#0F1724] text-white border border-white/6 text-sm"
-                                                                required
-                                                                disabled={isDisabled}
-                                                                min="1"
-                                                                max={remaining || undefined}
-                                                            />
-                                                        </div>
+                                                <form
+                                                    onSubmit={(e) => {
+                                                        e.preventDefault();
+                                                        const amountVal = amountInputs[startup.id] ?? e.target.amount.value;
+                                                        handleSendRequest(startup.id, amountVal, () => e.target.reset());
+                                                    }}
+                                                    className="w-full"
+                                                >
+                                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+                                                        <input
+                                                            name="amount"
+                                                            inputMode="numeric"
+                                                            value={amountInputs[startup.id] ?? ""}
+                                                            onChange={(e) => handleAmountChange(startup.id, e.target.value)}
+                                                            placeholder={
+                                                                fullyFunded(startup)
+                                                                    ? "Fully funded"
+                                                                    : remaining > 0
+                                                                        ? `Amount (max ₹${remaining.toLocaleString("en-IN")})`
+                                                                        : "Amount"
+                                                            }
+                                                            className="w-full sm:max-w-xs px-4 py-2 rounded-xl bg-[#0F1724] text-white border border-white/6 text-sm"
+                                                            required
+                                                            disabled={isDisabled}
+                                                            min="1"
+                                                            max={remaining || undefined}
+                                                        />
 
-                                                        {/* send button on its own row */}
-                                                        <div className="mt-3 flex justify-center ">
-                                                            <Button
-                                                                type="submit"
-                                                                variant="primary"
-                                                                size="default"
-                                                                className="px-4 flex w-40 items-center gap-2"
-                                                                disabled={isDisabled || isSending}
-                                                            >
-                                                                <Send size={14} /> {isSending ? "Sending…" : "Send"}
-                                                            </Button>
-                                                        </div>
-                                                    </form>
-                                                </div>
+                                                        <Button
+                                                            type="submit"
+                                                            variant="primary"
+                                                            size="default"
+                                                            className="w-full sm:w-auto px-4 flex items-center gap-2 justify-center"
+                                                            disabled={isDisabled || isSending}
+                                                        >
+                                                            <Send size={14} /> {isSending ? "Sending…" : "Send"}
+                                                        </Button>
+                                                    </div>
 
+                                                    {inputVal !== "" && (
+                                                        <div className="text-xs text-gray-300 mt-3 inline-flex items-center gap-2">
+                                                            <Percent size={14} />
+                                                            {estimatedEquity !== null ? (
+                                                                <span>
+                                                                    Estimated equity for ₹{Number(inputVal).toLocaleString("en-IN")}:{" "}
+                                                                    <strong className="text-white">{estimatedEquity.toFixed(2)}%</strong>
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-gray-400">Equity estimation unavailable</span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </form>
                                             ) : (
                                                 <div className="ml-auto text-green-400 font-medium">✅ Request Sent</div>
                                             )}
                                         </div>
-
-                                        {inputVal !== "" && (
-                                            <div className="text-xs text-gray-300 mt-3 inline-flex items-center gap-2">
-                                                <Percent size={14} />
-                                                {estimatedEquity !== null ? (
-                                                    <span>
-                                                        Estimated equity for ₹{Number(inputVal).toLocaleString("en-IN")}:{" "}
-                                                        <strong className="text-white">{estimatedEquity.toFixed(2)}%</strong>
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-gray-400">Equity estimation unavailable</span>
-                                                )}
-                                            </div>
-                                        )}
                                     </div>
                                 </motion.article>
                             );
@@ -459,22 +454,24 @@ export default function BrowseStartups() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4"
+                            className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4 sm:px-6"
                         >
                             <motion.div
+                                role="dialog"
+                                aria-modal="true"
                                 initial={{ scale: 0.99, y: 6 }}
                                 animate={{ scale: 1, y: 0 }}
                                 exit={{ scale: 0.99, y: 6 }}
-                                className="w-full max-w-lg bg-[#1A1F33] text-white rounded-2xl shadow-xl p-6 border border-white/6"
+                                className="w-full max-w-lg bg-[#1A1F33] text-white rounded-2xl shadow-xl p-4 sm:p-6 border border-white/6 max-h-[85vh] overflow-y-auto mx-2"
                             >
                                 <div className="flex items-start justify-between">
                                     <h3 className="text-xl font-semibold">Founder Details</h3>
-                                    <button className="text-gray-400 hover:text-white" onClick={() => setSelectedFounder(null)}>
+                                    <button className="text-gray-400 hover:text-white" onClick={() => setSelectedFounder(null)} aria-label="Close founder modal">
                                         <X size={18} />
                                     </button>
                                 </div>
 
-                                <div className="mt-4 text-sm text-gray-200 space-y-2">
+                                <div className="mt-4 text-sm text-gray-200 space-y-2 break-words">
                                     {selectedFounder.full_name && <div><strong>Name:</strong> {selectedFounder.full_name}</div>}
                                     {selectedFounder.email && <div><strong>Email:</strong> {selectedFounder.email}</div>}
                                     {selectedFounder.bio && <div><strong>Bio:</strong> {selectedFounder.bio}</div>}
@@ -482,7 +479,7 @@ export default function BrowseStartups() {
                                     {selectedFounder.linkedin && (
                                         <div>
                                             <strong>LinkedIn:</strong>{" "}
-                                            <a className="text-blue-400 hover:underline" href={externalUrl(selectedFounder.linkedin)} target="_blank" rel="noreferrer">
+                                            <a className="text-blue-400 hover:underline break-words" href={externalUrl(selectedFounder.linkedin)} target="_blank" rel="noreferrer">
                                                 {selectedFounder.linkedin}
                                             </a>
                                         </div>
@@ -496,7 +493,7 @@ export default function BrowseStartups() {
                 </AnimatePresence>
 
                 {/* toasts (top-right) */}
-                <div className="fixed top-6 right-6 z-50 flex flex-col gap-3 items-end px-2">
+                <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 flex flex-col gap-3 items-end px-2">
                     <AnimatePresence initial={false}>
                         {toasts.map((t) => (
                             <motion.div

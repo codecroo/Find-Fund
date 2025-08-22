@@ -6,7 +6,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .models import Profile
 
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):

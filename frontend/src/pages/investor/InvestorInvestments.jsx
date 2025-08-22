@@ -77,22 +77,22 @@ export default function InvestorInvestments() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto p-6">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-4xl font-bold text-white">My Investments</h1>
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">My Investments</h1>
                         <p className="text-sm text-gray-400 mt-2 max-w-xl">
                             All accepted investments you made. Track amounts, see startup details and your estimated equity.
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
                         <Button
                             onClick={fetchItems}
                             variant="secondary"
                             size="default"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 w-full sm:w-auto justify-center"
                         >
                             <RefreshCw size={16} />
                             <span>{loading ? "Refreshing..." : "Refresh"}</span>
@@ -106,13 +106,13 @@ export default function InvestorInvestments() {
                 ) : items.length === 0 ? (
                     <p className="text-center text-gray-400">No accepted investments yet.</p>
                 ) : (
-                    // IMPORTANT: use inline gridTemplateColumns to ensure a comfortable min width per card
+                    // responsive grid: 1 column on mobile, 2 on md, 3 on xl — each card has comfortable min width
                     <div
                         className="mx-auto"
                         style={{
                             display: "grid",
-                            gap: "28px",
-                            gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
+                            gap: 24,
+                            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
                             alignItems: "start",
                         }}
                     >
@@ -122,19 +122,18 @@ export default function InvestorInvestments() {
                             const fundingGoal = Number(s.funding_goal ?? s.goal ?? 0);
                             const yourEquity = computeInvestorEquity(req); // may be null
                             const raised = Number(s.raised_amount ?? s.amount_raised ?? 0);
-                            const progressPct =
-                                fundingGoal && fundingGoal > 0 ? Math.min((raised / fundingGoal) * 100, 100) : 0;
+                            const progressPct = fundingGoal && fundingGoal > 0 ? Math.min((raised / fundingGoal) * 100, 100) : 0;
 
                             return (
                                 <article
                                     key={req.id}
-                                    className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] rounded-2xl p-8 shadow-lg border border-white/6 min-h-[300px] flex flex-col justify-between"
-                                    style={{ width: "100%" }} // ensure full column width
+                                    className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg border border-white/6 min-h-[240px] flex flex-col justify-between"
+                                    style={{ width: "100%" }}
                                 >
                                     <div>
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="min-w-0">
-                                                <h2 className="text-2xl font-semibold text-white truncate">{s.name || "Unknown startup"}</h2>
+                                                <h2 className="text-lg sm:text-2xl font-semibold text-white truncate">{s.name || "Unknown startup"}</h2>
                                                 {s.industry && <p className="text-gray-400 text-sm mt-1">{s.industry}</p>}
                                             </div>
                                             <div className="inline-flex items-center gap-2 text-sm text-gray-300">
@@ -145,16 +144,16 @@ export default function InvestorInvestments() {
                                         </div>
 
                                         {/* metrics */}
-                                        <div className="flex flex-wrap gap-3 mt-5">
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-600/10 text-teal-200 text-sm font-semibold">
-                                                <Banknote size={14} /> Goal: {fundingGoal ? `₹${fundingGoal.toLocaleString("en-IN")}` : "Unset"}
+                                        <div className="flex flex-wrap gap-2 mt-4">
+                                            <span className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-teal-600/10 text-teal-200 text-sm font-semibold">
+                                                <Banknote size={14} /> {fundingGoal ? `Goal: ₹${fundingGoal.toLocaleString("en-IN")}` : "Goal unset"}
                                             </span>
 
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-600/10 text-indigo-200 text-sm font-semibold">
+                                            <span className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-indigo-600/10 text-indigo-200 text-sm font-semibold">
                                                 <ChartPie size={14} /> Raised: ₹{raised.toLocaleString("en-IN")}
                                             </span>
 
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-600/10 text-pink-200 text-sm">
+                                            <span className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-pink-600/10 text-pink-200 text-sm">
                                                 <Percent size={14} /> {s.equity ? `${s.equity}% for full goal` : "Equity unset"}
                                             </span>
                                         </div>
@@ -165,7 +164,7 @@ export default function InvestorInvestments() {
                                         )}
 
                                         {/* progress bar */}
-                                        <div className="mt-5">
+                                        <div className="mt-4">
                                             <div className="w-full h-2 rounded-full bg-white/6 overflow-hidden">
                                                 <div
                                                     className={`h-2 rounded-full ${progressPct >= 100 ? "bg-green-400" : "bg-indigo-500"}`}
@@ -180,16 +179,16 @@ export default function InvestorInvestments() {
                                     </div>
 
                                     {/* bottom actions */}
-                                    <div className="mt-6 flex items-center justify-between gap-3">
-                                        <div className="flex gap-3">
+                                    <div className="mt-4 md:mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div className="flex gap-2 flex-wrap">
                                             {s.website && (
                                                 <a
                                                     href={externalUrl(s.website)}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600/10 text-blue-300 hover:bg-blue-600/20 text-sm"
+                                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600/10 text-blue-300 hover:bg-blue-600/20 text-sm"
                                                 >
-                                                    <Globe size={14} /> Website
+                                                    <Globe size={14} /> <span className="hidden sm:inline">Website</span>
                                                 </a>
                                             )}
 
@@ -198,9 +197,9 @@ export default function InvestorInvestments() {
                                                     href={fileUrl(s.pitch_deck)}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600/10 text-purple-300 hover:bg-purple-600/20 text-sm"
+                                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-600/10 text-purple-300 hover:bg-purple-600/20 text-sm"
                                                 >
-                                                    <FileText size={14} /> Pitch Deck
+                                                    <FileText size={14} /> <span className="hidden sm:inline">Pitch Deck</span>
                                                 </a>
                                             )}
                                         </div>
@@ -211,9 +210,7 @@ export default function InvestorInvestments() {
                                             ) : (
                                                 <div className="text-xs text-gray-400">Equity estimate unavailable</div>
                                             )}
-                                            <div className="text-lg font-semibold text-white">
-                                                {yourEquity !== null ? `${yourEquity.toFixed(2)}%` : "—"}
-                                            </div>
+                                            <div className="text-lg font-semibold text-white">{yourEquity !== null ? `${yourEquity.toFixed(2)}%` : "—"}</div>
                                         </div>
                                     </div>
                                 </article>
@@ -224,7 +221,7 @@ export default function InvestorInvestments() {
             </div>
 
             {/* TOP-RIGHT TOASTS */}
-            <div className="fixed top-6 right-6 z-60 flex flex-col gap-3 items-end px-2">
+            <div className="fixed top-4 right-4 z-60 flex flex-col gap-3 items-end px-2">
                 <AnimatePresence initial={false}>
                     {toasts.map((t) => (
                         <motion.div
@@ -235,9 +232,7 @@ export default function InvestorInvestments() {
                             transition={{ duration: 0.26, ease: "easeOut" }}
                             className={`w-full max-w-xs p-3 rounded-xl shadow-2xl border flex items-start gap-3 pointer-events-auto ${t.type === "success"
                                 ? "bg-gradient-to-r from-green-700/95 to-green-600/85 border-green-500/60 text-white"
-                                : t.type === "error"
-                                    ? "bg-gradient-to-r from-red-700/95 to-red-600/85 border-red-500/60 text-white"
-                                    : "bg-gradient-to-r from-slate-800/95 to-slate-700/85 border-white/6 text-white"
+                                : "bg-gradient-to-r from-red-700/95 to-red-600/85 border-red-500/60 text-white"
                                 }`}
                         >
                             <div className="pt-0.5">

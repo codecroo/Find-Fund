@@ -13,6 +13,7 @@ import {
     ChevronRight,
     X,
     User,
+    SaveAll,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion"; // <--- added for mobile animations
 
@@ -56,7 +57,7 @@ export default function Sidebar({ role: propRole, onLogout }) {
         ...(role === "Investor"
             ? [
                 { label: "Browse Startups", icon: <Building2 size={18} />, path: "/dashboard/investor/startups" },
-                { label: "Saved Startups", icon: <Rocket size={18} />, path: "/dashboard/investor/saved" },
+                { label: "Saved Startups", icon: <SaveAll size={18} />, path: "/dashboard/investor/saved" },
                 { label: "My Investments", icon: <Briefcase size={18} />, path: "/dashboard/investor/investments" },
                 { label: "Profile", icon: <User size={18} />, path: "/dashboard/investor/profile" },
             ]
@@ -130,8 +131,8 @@ export default function Sidebar({ role: propRole, onLogout }) {
                     {!collapsed ? (
                         <div className="flex items-center gap-3">
                             <div>
-                                <div className="text-white font-semibold">Dashboard</div>
-                                <div className="text-xs text-gray-400">Welcome back</div>
+                                <div className="text-white pl-4 font-semibold">Dashboard</div>
+                                <div className="text-xs text-gray-400 pl-4">Welcome back</div>
                             </div>
                         </div>
                     ) : (

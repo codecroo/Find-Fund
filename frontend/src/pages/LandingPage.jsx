@@ -278,16 +278,15 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* FINAL CTA - full viewport */}
             <section className="snap-start min-h-screen flex items-center py-20 px-4 md:px-6">
                 <div className="max-w-4xl mx-auto text-center w-full">
                     <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-                        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">Ready to back or build the next great company?</h2>
+                        <h2 className="text-xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">Ready to back or build the next great company?</h2>
                         <p className="mt-4 text-lg md:text-xl text-[#B6C6DD]">Join a community where transparency, security and growth meet.</p>
 
                         <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
                             <Link to="/signup">
-                                <Button size="lg" className="px-6 py-4 rounded-xl bg-gradient-to-r from-[#4F91FF] to-[#7C3AED] shadow-lg text-base md:text-lg">Get started</Button>
+                                <Button size="lg" >Get started</Button>
                             </Link>
 
                         </div>

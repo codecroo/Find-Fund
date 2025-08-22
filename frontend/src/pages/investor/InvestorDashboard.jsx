@@ -25,7 +25,7 @@ export default function InvestorDashboard() {
     // modal for viewing single request details
     const [selectedRequest, setSelectedRequest] = useState(null);
 
-    // modal to send a new request (send again) — NOTE: no message option anymore
+    // modal to send a new request (send again)
     const [sendModal, setSendModal] = useState({ open: false, request: null, amount: "", sending: false });
 
     // toasts
@@ -44,6 +44,8 @@ export default function InvestorDashboard() {
         setUser(storedUser);
         setRole(storedRole);
         fetchAll();
+        // cleanup
+        return () => Object.values(toastTimers.current).forEach((t) => clearTimeout(t));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -102,7 +104,7 @@ export default function InvestorDashboard() {
                 if (Array.isArray(res.data)) return res.data;
                 if (res.data && Array.isArray(res.data.results)) return res.data.results;
             } catch (err) {
-                // try next candidate
+                // try next
             }
         }
         return [];
@@ -141,16 +143,10 @@ export default function InvestorDashboard() {
     const rejectedCount = requests.filter((r) => String(r.status).toLowerCase() === "rejected").length;
     const rejectedList = requests.filter((r) => String(r.status).toLowerCase() === "rejected");
 
-    /* ---------- send again flow (message removed) ---------- */
+    /* ---------- send again flow ---------- */
     const openSendModal = (r) => {
-        setSendModal({
-            open: true,
-            request: r,
-            amount: r.amount ?? "",
-            sending: false,
-        });
+        setSendModal({ open: true, request: r, amount: r.amount ?? "", sending: false });
     };
-
     const closeSendModal = () => setSendModal({ open: false, request: null, amount: "", sending: false });
 
     const handleSendAgain = async () => {
@@ -173,7 +169,6 @@ export default function InvestorDashboard() {
 
         setSendModal((s) => ({ ...s, sending: true }));
         try {
-            // NOTE: message removed from payload
             const payload = { startup_id: startup.id, amount: amountVal };
             await api.post("investors/requests/", payload);
             addToast("success", "Request sent", "Founder will review your resubmitted request");
@@ -190,69 +185,69 @@ export default function InvestorDashboard() {
     /* ---------- UI ---------- */
     return (
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-4xl font-bold text-white">Welcome, {user}</h1>
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Welcome{user ? `, ${user}` : ""}</h1>
                         <p className="text-sm text-gray-400 mt-2 max-w-xl">
                             Investor dashboard — quick stats and a view-only list of rejected requests. You can resubmit a request directly from here.
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <Button onClick={handleRefresh} variant="secondary" size="default" className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                        <Button onClick={handleRefresh} variant="secondary" size="default" className="flex items-center gap-2 w-full sm:w-auto justify-center">
                             <RefreshCw size={16} /> {refreshing ? "Refreshing..." : "Refresh"}
                         </Button>
-                        <Button variant="ghost" onClick={() => { localStorage.clear(); window.location.href = "/signin"; }}>
+                        <Button variant="ghost" onClick={() => { localStorage.clear(); window.location.href = "/signin"; }} className="w-full sm:w-auto">
                             Logout
                         </Button>
                     </div>
                 </div>
 
-                {/* stats */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <motion.div className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] p-6 rounded-2xl border border-white/6 shadow-lg">
+                {/* stats: responsive grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <motion.div className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] p-4 sm:p-6 rounded-2xl border border-white/6 shadow-lg">
                         <div className="flex items-center justify-between">
                             <div>
                                 <div className="text-xs text-gray-400">Saved</div>
                                 <div className="text-2xl font-bold text-white">{savedCount}</div>
                             </div>
-                            <div className="text-indigo-300"><Bookmark size={28} /></div>
+                            <div className="text-indigo-300"><Bookmark size={26} /></div>
                         </div>
-                        <div className="text-xs text-gray-400 mt-3">Startups you've bookmarked</div>
+                        <div className="text-xs text-gray-400 mt-2">Startups you've bookmarked</div>
                     </motion.div>
 
-                    <motion.div className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] p-6 rounded-2xl border border-white/6 shadow-lg">
+                    <motion.div className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] p-4 sm:p-6 rounded-2xl border border-white/6 shadow-lg">
                         <div className="flex items-center justify-between">
                             <div>
                                 <div className="text-xs text-gray-400">Pending requests</div>
                                 <div className="text-2xl font-bold text-white">{pendingCount}</div>
                             </div>
-                            <div className="text-yellow-300"><Clock size={28} /></div>
+                            <div className="text-yellow-300"><Clock size={26} /></div>
                         </div>
-                        <div className="text-xs text-gray-400 mt-3">Requests awaiting founder decision</div>
+                        <div className="text-xs text-gray-400 mt-2">Requests awaiting founder decision</div>
                     </motion.div>
 
-                    <motion.div className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] p-6 rounded-2xl border border-white/6 shadow-lg">
+                    <motion.div className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] p-4 sm:p-6 rounded-2xl border border-white/6 shadow-lg">
                         <div className="flex items-center justify-between">
                             <div>
                                 <div className="text-xs text-gray-400">Accepted</div>
                                 <div className="text-2xl font-bold text-white">{acceptedCount}</div>
                             </div>
-                            <div className="text-green-300"><CheckCircle size={28} /></div>
+                            <div className="text-green-300"><CheckCircle size={26} /></div>
                         </div>
-                        <div className="text-xs text-gray-400 mt-3">Investments accepted by founders</div>
+                        <div className="text-xs text-gray-400 mt-2">Investments accepted by founders</div>
                     </motion.div>
 
-                    <motion.div className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] p-6 rounded-2xl border border-white/6 shadow-lg">
+                    <motion.div className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] p-4 sm:p-6 rounded-2xl border border-white/6 shadow-lg">
                         <div className="flex items-center justify-between">
                             <div>
                                 <div className="text-xs text-gray-400">Rejected</div>
                                 <div className="text-2xl font-bold text-white">{rejectedCount}</div>
                             </div>
-                            <div className="text-red-300"><X size={28} /></div>
+                            <div className="text-red-300"><X size={26} /></div>
                         </div>
-                        <div className="text-xs text-gray-400 mt-3">Requests rejected by founders</div>
+                        <div className="text-xs text-gray-400 mt-2">Requests rejected by founders</div>
                     </motion.div>
                 </div>
 
@@ -260,7 +255,7 @@ export default function InvestorDashboard() {
                 <div className="space-y-4">
                     <div className="flex items-center justify-between mb-3">
                         <h2 className="text-xl font-semibold text-white">Recently rejected requests</h2>
-                        <div className="text-sm text-gray-400">You can view details here and resubmit a request if you want.</div>
+                        <div className="text-sm text-gray-400 hidden sm:block">You can view details here and resubmit a request if you want.</div>
                     </div>
 
                     {loading ? (
@@ -268,43 +263,39 @@ export default function InvestorDashboard() {
                     ) : rejectedList.length === 0 ? (
                         <p className="text-gray-400">No rejected requests — nice job 👍</p>
                     ) : (
-                        <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(520px, 1fr))" }}>
+                        <div className="grid grid-cols-1 gap-4">
                             {rejectedList.map((r) => {
                                 const startup = r.startup ?? {};
                                 return (
                                     <div
                                         key={r.id}
-                                        className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] p-6 rounded-2xl border border-white/6 shadow-lg flex items-start justify-between gap-4"
+                                        className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] p-4 sm:p-6 rounded-2xl border border-white/6 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                                     >
                                         <div className="min-w-0">
                                             <div className="flex items-start gap-3">
                                                 <div className="min-w-0">
-                                                    <div className="text-xl font-semibold text-white truncate">{startup.name ?? "Startup"}</div>
+                                                    <div className="text-lg sm:text-xl font-semibold text-white truncate">{startup.name ?? "Startup"}</div>
                                                     <div className="text-sm text-gray-300 mt-1">{startup.industry ?? startup.category ?? ""}</div>
                                                 </div>
                                             </div>
 
-                                            {/* bigger description (if available) */}
                                             {startup.description && (
-                                                <div className="text-base text-gray-300 mt-3 line-clamp-3">
-                                                    {startup.description}
-                                                </div>
+                                                <div className="text-sm text-gray-300 mt-3 line-clamp-3">{startup.description}</div>
                                             )}
 
-                                            <div className="mt-3 text-base text-gray-300">
+                                            <div className="mt-3 text-sm text-gray-300">
                                                 <div>Amount: <span className="font-medium">₹{Number(r.amount).toLocaleString("en-IN")}</span></div>
-                                                <div className="text-sm text-gray-400 mt-1">Date: {new Date(r.created_at ?? r.updated_at ?? Date.now()).toLocaleDateString()}</div>
+                                                <div className="text-xs text-gray-400 mt-1">Date: {new Date(r.created_at ?? r.updated_at ?? Date.now()).toLocaleDateString()}</div>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-3">
-                                            <Button onClick={() => setSelectedRequest(r)} variant="outline" className="flex items-center gap-2">
-                                                <Eye size={14} /> View
+                                        <div className="flex-shrink-0 flex gap-2 w-full sm:w-auto">
+                                            <Button onClick={() => setSelectedRequest(r)} variant="outline" className="flex-1 sm:flex-none flex items-center gap-2 justify-center">
+                                                <Eye size={14} /> <span className="hidden sm:inline">View</span>
                                             </Button>
 
-                                            {/* Send Again button — opens modal to submit a new request */}
-                                            <Button onClick={() => openSendModal(r)} variant="primary" className="flex items-center gap-2">
-                                                <Send size={14} /> Send Again
+                                            <Button onClick={() => openSendModal(r)} variant="primary" className="flex-1 sm:flex-none flex items-center gap-2 justify-center">
+                                                <Send size={14} /> <span className="hidden sm:inline">Send Again</span>
                                             </Button>
                                         </div>
                                     </div>
@@ -328,7 +319,7 @@ export default function InvestorDashboard() {
                             initial={{ y: 8, scale: 0.98 }}
                             animate={{ y: 0, scale: 1 }}
                             exit={{ y: 8, scale: 0.98 }}
-                            className="w-full max-w-2xl bg-[#0B1220] rounded-2xl p-6 shadow-2xl border border-white/6"
+                            className="w-full max-w-xl bg-[#0B1220] rounded-2xl p-6 shadow-2xl border border-white/6"
                         >
                             <div className="flex items-start justify-between">
                                 <h3 className="text-xl font-semibold text-white">Request Details</h3>
@@ -349,7 +340,7 @@ export default function InvestorDashboard() {
                 )}
             </AnimatePresence>
 
-            {/* Send Again modal (message removed) */}
+            {/* Send Again modal */}
             <AnimatePresence>
                 {sendModal.open && sendModal.request && (
                     <motion.div
@@ -362,7 +353,7 @@ export default function InvestorDashboard() {
                             initial={{ y: 10, scale: 0.995 }}
                             animate={{ y: 0, scale: 1 }}
                             exit={{ y: 10, scale: 0.995 }}
-                            className="w-full max-w-xl bg-[#0B1220] text-white rounded-2xl p-6 border border-white/6 shadow-2xl"
+                            className="w-full max-w-lg bg-[#0B1220] text-white rounded-2xl p-6 border border-white/6 shadow-2xl"
                         >
                             <div className="flex items-start justify-between">
                                 <h3 className="text-xl font-semibold">Send Request — {sendModal.request.startup?.name ?? "Startup"}</h3>
@@ -388,9 +379,9 @@ export default function InvestorDashboard() {
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-3 mt-6">
-                                <Button variant="secondary" onClick={closeSendModal}>Cancel</Button>
-                                <Button variant="primary" onClick={handleSendAgain} disabled={sendModal.sending}>
+                            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
+                                <Button variant="secondary" onClick={closeSendModal} className="w-full sm:w-auto">Cancel</Button>
+                                <Button variant="primary" onClick={handleSendAgain} disabled={sendModal.sending} className="w-full sm:w-auto">
                                     <Send size={14} /> {sendModal.sending ? "Sending…" : "Send Request"}
                                 </Button>
                             </div>
@@ -400,7 +391,7 @@ export default function InvestorDashboard() {
             </AnimatePresence>
 
             {/* Top-right toasts */}
-            <div className="fixed top-6 right-6 z-60 flex flex-col gap-3 items-end px-2">
+            <div className="fixed top-4 right-4 z-60 flex flex-col gap-3 items-end px-2">
                 <AnimatePresence initial={false}>
                     {toasts.map((t) => (
                         <motion.div
@@ -411,9 +402,7 @@ export default function InvestorDashboard() {
                             transition={{ duration: 0.26, ease: "easeOut" }}
                             className={`w-full max-w-xs p-3 rounded-xl shadow-2xl border flex items-start gap-3 pointer-events-auto ${t.type === "success"
                                 ? "bg-gradient-to-r from-green-700/95 to-green-600/85 border-green-500/60 text-white"
-                                : t.type === "error"
-                                    ? "bg-gradient-to-r from-red-700/95 to-red-600/85 border-red-500/60 text-white"
-                                    : "bg-gradient-to-r from-slate-800/95 to-slate-700/85 border-white/6 text-white"
+                                : "bg-gradient-to-r from-red-700/95 to-red-600/85 border-red-500/60 text-white"
                                 }`}
                         >
                             <div className="pt-0.5">

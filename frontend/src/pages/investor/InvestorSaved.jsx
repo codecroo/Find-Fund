@@ -146,13 +146,11 @@ export default function InvestorSaved() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div className="max-w-2xl">
-                        <h1 className="text-4xl font-bold text-white">Saved Startups</h1>
-                        <p className="text-sm text-gray-400 mt-2 max-w-xl">
-                            Your bookmarked startups. You can unsave, view founder details or send a funding request from here.
-                        </p>
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Saved Startups</h1>
+                        <p className="text-sm text-gray-400 mt-2">Your bookmarked startups. You can unsave, view founder details or send a funding request from here.</p>
                     </div>
                 </div>
 
@@ -165,8 +163,8 @@ export default function InvestorSaved() {
                         className="mx-auto"
                         style={{
                             display: "grid",
-                            gap: "28px",
-                            gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
+                            gap: 20,
+                            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
                             alignItems: "start",
                         }}
                     >
@@ -190,13 +188,12 @@ export default function InvestorSaved() {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 6 }}
                                     transition={{ duration: 0.26 }}
-                                    className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] rounded-2xl p-8 shadow-lg border border-white/6 min-h-[260px] flex flex-col justify-between"
-                                    style={{ width: "100%" }}
+                                    className="bg-gradient-to-br from-[#0F1622] to-[#0B1220] rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg border border-white/6 min-h-[220px] flex flex-col justify-between"
                                 >
                                     <div>
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="min-w-0">
-                                                <h2 className="text-2xl font-semibold text-white truncate">{startup.name}</h2>
+                                                <h2 className="text-lg sm:text-2xl font-semibold text-white truncate">{startup.name}</h2>
                                                 {startup.industry && <p className="text-gray-400 text-sm mt-1">{startup.industry}</p>}
                                             </div>
 
@@ -205,7 +202,7 @@ export default function InvestorSaved() {
                                                     onClick={() => handleUnsaveStartup(id)}
                                                     variant="ghost"
                                                     size="default"
-                                                    className="px-3 py-2 gap-2 rounded-md"
+                                                    className="px-3 py-1 rounded-md flex items-center gap-2"
                                                     title="Remove saved"
                                                 >
                                                     <Trash2 size={16} />
@@ -214,37 +211,37 @@ export default function InvestorSaved() {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-wrap gap-3 mt-5 mb-4">
+                                        <div className="flex flex-wrap gap-2 mt-4 mb-3">
                                             {startup.stage && (
-                                                <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-indigo-600/10 text-indigo-300">
+                                                <span className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-full bg-indigo-600/10 text-indigo-300">
                                                     <Clock size={14} /> {startup.stage}
                                                 </span>
                                             )}
 
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-teal-600/10 text-teal-200 font-semibold">
+                                            <span className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-full bg-teal-600/10 text-teal-200 font-semibold">
                                                 <Banknote size={14} /> {goal ? `₹${goal.toLocaleString("en-IN")} goal` : "Goal unset"}
                                             </span>
 
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-green-600/10 text-green-200 font-semibold">
+                                            <span className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-full bg-green-600/10 text-green-200 font-semibold">
                                                 <CheckCircle size={14} /> Raised ₹{raised.toLocaleString("en-IN")}
                                             </span>
 
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-yellow-600/10 text-yellow-200">
+                                            <span className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-full bg-yellow-600/10 text-yellow-200">
                                                 <Clock size={14} /> Remaining ₹{remaining.toLocaleString("en-IN")}
                                             </span>
 
                                             {startup.equity && (
-                                                <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-pink-600/10 text-pink-200">
+                                                <span className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-full bg-pink-600/10 text-pink-200">
                                                     <Percent size={14} /> {startup.equity}% for full goal
                                                 </span>
                                             )}
                                         </div>
 
                                         {startup.description && (
-                                            <p className="text-gray-300 text-sm leading-relaxed line-clamp-3 mb-5">{startup.description}</p>
+                                            <p className="text-gray-300 text-sm leading-relaxed line-clamp-3 mb-4">{startup.description}</p>
                                         )}
 
-                                        <div className="grid grid-cols-1 gap-3 text-sm text-gray-300 mb-5">
+                                        <div className="grid grid-cols-1 gap-2 text-sm text-gray-300 mb-4">
                                             {startup.team_size && (
                                                 <div className="flex items-center gap-2 min-w-0">
                                                     <Users size={14} className="flex-shrink-0 text-indigo-300" />
@@ -275,15 +272,16 @@ export default function InvestorSaved() {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="flex gap-3 mb-4 flex-wrap">
+
+                                        <div className="flex gap-3 mb-3 flex-wrap">
                                             {startup.website && (
                                                 <a
                                                     href={externalUrl(startup.website)}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600/10 text-blue-300 hover:bg-blue-600/20 text-sm"
+                                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600/10 text-blue-300 hover:bg-blue-600/20 text-sm"
                                                 >
-                                                    <Globe size={14} /> Website
+                                                    <Globe size={14} /> <span className="hidden sm:inline">Website</span>
                                                 </a>
                                             )}
 
@@ -292,9 +290,9 @@ export default function InvestorSaved() {
                                                     href={fileUrl(startup.pitch_deck)}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600/10 text-purple-300 hover:bg-purple-600/20 text-sm"
+                                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-600/10 text-purple-300 hover:bg-purple-600/20 text-sm"
                                                 >
-                                                    <FileText size={14} /> Pitch Deck
+                                                    <FileText size={14} /> <span className="hidden sm:inline">Pitch Deck</span>
                                                 </a>
                                             )}
                                         </div>
@@ -312,7 +310,7 @@ export default function InvestorSaved() {
                                         </Button>
 
                                         {!isRequested ? (
-                                            <div className="mt-3 flex gap-3 items-center">
+                                            <div className="mt-3 flex flex-col sm:flex-row gap-3 items-stretch">
                                                 <input
                                                     name={`amount-${id}`}
                                                     value={amountInputs[id] ?? ""}
@@ -333,10 +331,10 @@ export default function InvestorSaved() {
                                                     onClick={() => handleSendRequest(id)}
                                                     variant="primary"
                                                     size="default"
-                                                    className="px-4 flex items-center gap-2"
+                                                    className="w-full sm:w-auto flex items-center gap-2 justify-center px-4"
                                                     disabled={isDisabled || isSending}
                                                 >
-                                                    <Send size={14} /> Send
+                                                    <Send size={14} /> <span className="hidden sm:inline">Send</span>
                                                 </Button>
                                             </div>
                                         ) : (
@@ -365,35 +363,48 @@ export default function InvestorSaved() {
             </div>
 
             {/* Founder modal */}
-            {selectedFounder && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
-                    <div className="bg-[#1A1F33] text-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative border border-white/6">
-                        <button className="absolute top-4 right-4 text-gray-400 hover:text-white" onClick={() => setSelectedFounder(null)}>
-                            <X size={20} />
-                        </button>
+            <AnimatePresence>
+                {selectedFounder && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.99, y: 6 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.99, y: 6 }}
+                            className="w-full max-w-lg bg-[#1A1F33] text-white rounded-2xl shadow-xl p-6 relative border border-white/6"
+                        >
+                            <div className="flex items-start justify-between">
+                                <h2 className="text-xl font-semibold">👤 Founder Details</h2>
+                                <button className="text-gray-400 hover:text-white" onClick={() => setSelectedFounder(null)}>
+                                    <X size={18} />
+                                </button>
+                            </div>
 
-                        <h2 className="text-2xl font-bold mb-4">👤 Founder Details</h2>
-
-                        <div className="space-y-2 text-sm">
-                            {selectedFounder.full_name && <p><strong>Name:</strong> {selectedFounder.full_name}</p>}
-                            {selectedFounder.email && <p><strong>Email:</strong> {selectedFounder.email}</p>}
-                            {selectedFounder.bio && <p><strong>Bio:</strong> {selectedFounder.bio}</p>}
-                            {selectedFounder.skills && <p><strong>Skills:</strong> {selectedFounder.skills}</p>}
-                            {selectedFounder.linkedin && (
-                                <p>
-                                    <strong>LinkedIn:</strong>{" "}
-                                    <a href={externalUrl(selectedFounder.linkedin)} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">
-                                        {selectedFounder.linkedin}
-                                    </a>
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+                            <div className="mt-4 space-y-2 text-sm text-gray-200">
+                                {selectedFounder.full_name && <p><strong>Name:</strong> {selectedFounder.full_name}</p>}
+                                {selectedFounder.email && <p><strong>Email:</strong> {selectedFounder.email}</p>}
+                                {selectedFounder.bio && <p><strong>Bio:</strong> {selectedFounder.bio}</p>}
+                                {selectedFounder.skills && <p><strong>Skills:</strong> {selectedFounder.skills}</p>}
+                                {selectedFounder.linkedin && (
+                                    <p>
+                                        <strong>LinkedIn:</strong>{" "}
+                                        <a href={externalUrl(selectedFounder.linkedin)} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">
+                                            {selectedFounder.linkedin}
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* TOP-RIGHT TOASTS */}
-            <div className="fixed top-6 right-6 z-60 flex flex-col gap-3 items-end px-2">
+            <div className="fixed top-4 right-4 z-60 flex flex-col gap-3 items-end px-2">
                 <AnimatePresence initial={false}>
                     {toasts.map((t) => (
                         <motion.div
@@ -403,10 +414,10 @@ export default function InvestorSaved() {
                             exit={{ opacity: 0, y: -12, scale: 0.98 }}
                             transition={{ duration: 0.26, ease: "easeOut" }}
                             className={`w-full max-w-xs p-3 rounded-xl shadow-2xl border flex items-start gap-3 pointer-events-auto ${t.type === "success"
-                                    ? "bg-gradient-to-r from-green-700/95 to-green-600/85 border-green-500/60 text-white"
-                                    : t.type === "error"
-                                        ? "bg-gradient-to-r from-red-700/95 to-red-600/85 border-red-500/60 text-white"
-                                        : "bg-gradient-to-r from-slate-800/95 to-slate-700/85 border-white/6 text-white"
+                                ? "bg-gradient-to-r from-green-700/95 to-green-600/85 border-green-500/60 text-white"
+                                : t.type === "error"
+                                    ? "bg-gradient-to-r from-red-700/95 to-red-600/85 border-red-500/60 text-white"
+                                    : "bg-gradient-to-r from-slate-800/95 to-slate-700/85 border-white/6 text-white"
                                 }`}
                         >
                             <div className="pt-0.5">

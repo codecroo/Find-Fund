@@ -17,7 +17,7 @@ class BrowseStartups(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# ✅ Investor's own requests (list + create)
+# Investor's own requests (list + create)
 class InvestmentRequestListCreate(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -36,7 +36,7 @@ class InvestmentRequestListCreate(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ✅ Founder: manage incoming requests (list + accept/reject)
+# Founder: manage incoming requests (list + accept/reject)
 class FounderInvestmentRequests(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -68,7 +68,7 @@ class FounderInvestmentRequests(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # ✅ Update raised amount
+            # Update raised amount
             startup.amount_raised += req.amount
             startup.save()
 

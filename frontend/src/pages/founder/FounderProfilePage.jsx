@@ -123,33 +123,31 @@ export default function FounderProfilePage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto p-6">
-                {/* Header */}
-                <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6">
+                {/* Header - responsive stack */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-4xl font-bold text-white">Founder Profile</h1>
-                        <p className="text-sm text-gray-400 mt-2 max-w-xl">
-                            Keep your founder profile sharp — investors will scan your key info quickly.
-                        </p>
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Founder Profile</h1>
+                        <p className="text-sm text-gray-400 mt-2 max-w-xl">Keep your founder profile sharp — investors will scan your key info quickly.</p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                         {!editing ? (
                             <Button
                                 onClick={() => setEditing(true)}
                                 variant="primary"
                                 size="default"
-                                className="flex items-center gap-2 px-3 py-2"
+                                className="flex items-center gap-2 w-full sm:w-auto justify-center px-3 py-2"
                             >
                                 <User size={14} /> Edit
                             </Button>
                         ) : (
-                            <>
+                            <div className="flex w-full sm:w-auto gap-2">
                                 <Button
                                     onClick={handleCancelEdit}
                                     variant="secondary"
                                     size="default"
-                                    className="flex items-center gap-2 px-3 py-2"
+                                    className="flex-1 flex items-center gap-2 justify-center px-3 py-2"
                                 >
                                     <X size={14} /> Cancel
                                 </Button>
@@ -158,18 +156,18 @@ export default function FounderProfilePage() {
                                     variant="primary"
                                     size="default"
                                     disabled={saving}
-                                    className="flex items-center gap-2 px-3 py-2"
+                                    className="flex-1 flex items-center gap-2 justify-center px-3 py-2"
                                 >
                                     <CheckCircle size={14} /> {saving ? "Saving..." : "Save"}
                                 </Button>
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
 
                 {/* Card */}
                 <Card className="shadow-lg bg-gradient-to-br from-[#0B1220] to-[#07121a] border border-white/6 rounded-2xl overflow-hidden">
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                         {editing ? (
                             <>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -257,30 +255,30 @@ export default function FounderProfilePage() {
                                     />
                                 </div>
 
-                                <div className="mt-3">
-                                    <label className="text-xs text-gray-300 mb-2 block">Experience (brief)</label>
-                                    <textarea
-                                        name="experience"
-                                        value={profile.experience || ""}
-                                        onChange={handleChange}
-                                        rows={3}
-                                        placeholder="Experience"
-                                        className="w-full p-3 rounded-xl bg-[#0F1724] text-white border border-white/6"
-                                    />
+                                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs text-gray-300 mb-2 block">Experience (brief)</label>
+                                        <textarea
+                                            name="experience"
+                                            value={profile.experience || ""}
+                                            onChange={handleChange}
+                                            rows={3}
+                                            placeholder="Experience"
+                                            className="w-full p-3 rounded-xl bg-[#0F1724] text-white border border-white/6"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs text-gray-300 mb-2 block">Key skills (comma separated)</label>
+                                        <input
+                                            name="skills"
+                                            value={profile.skills || ""}
+                                            onChange={handleChange}
+                                            placeholder="Marketing, Growth..."
+                                            className="w-full p-3 rounded-xl bg-[#0F1724] text-white border border-white/6"
+                                        />
+                                    </div>
                                 </div>
-
-                                <div className="mt-3">
-                                    <label className="text-xs text-gray-300 mb-2 block">Key skills (comma separated)</label>
-                                    <input
-                                        name="skills"
-                                        value={profile.skills || ""}
-                                        onChange={handleChange}
-                                        placeholder="Marketing, Growth..."
-                                        className="w-full p-3 rounded-xl bg-[#0F1724] text-white border border-white/6"
-                                    />
-                                </div>
-
-
                             </>
                         ) : (
                             <>
@@ -291,7 +289,7 @@ export default function FounderProfilePage() {
                                         </div>
                                         <div className="min-w-0">
                                             <div className="text-xs text-gray-400">Full name</div>
-                                            <div className="text-base text-white font-medium leading-snug">{profile.full_name || "Not provided"}</div>
+                                            <div className="text-base text-white font-medium leading-snug truncate">{profile.full_name || "Not provided"}</div>
                                         </div>
                                     </div>
 
@@ -301,7 +299,7 @@ export default function FounderProfilePage() {
                                         </div>
                                         <div>
                                             <div className="text-xs text-gray-400">Email</div>
-                                            <div className="text-base text-white font-medium leading-snug">{profile.email || "Not provided"}</div>
+                                            <div className="text-base text-white font-medium leading-snug truncate">{profile.email || "Not provided"}</div>
                                         </div>
                                     </div>
 
@@ -312,7 +310,7 @@ export default function FounderProfilePage() {
                                             </div>
                                             <div>
                                                 <div className="text-xs text-gray-400">Phone</div>
-                                                <div className="text-base text-white font-medium">{profile.phone || "Not provided"}</div>
+                                                <div className="text-base text-white font-medium truncate">{profile.phone || "Not provided"}</div>
                                             </div>
                                         </div>
 
@@ -322,7 +320,7 @@ export default function FounderProfilePage() {
                                             </div>
                                             <div>
                                                 <div className="text-xs text-gray-400">Location</div>
-                                                <div className="text-base text-white font-medium">{profile.location || "Not provided"}</div>
+                                                <div className="text-base text-white font-medium truncate">{profile.location || "Not provided"}</div>
                                             </div>
                                         </div>
 
@@ -332,7 +330,7 @@ export default function FounderProfilePage() {
                                             </div>
                                             <div>
                                                 <div className="text-xs text-gray-400">Company / Role</div>
-                                                <div className="text-base text-white font-medium">{profile.company || "Not provided"}</div>
+                                                <div className="text-base text-white font-medium truncate">{profile.company || "Not provided"}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -376,7 +374,7 @@ export default function FounderProfilePage() {
             </div>
 
             {/* TOP-RIGHT TOASTS */}
-            <div className="fixed top-6 right-6 z-60 flex flex-col gap-3 items-end px-2">
+            <div className="fixed top-4 right-4 z-60 flex flex-col gap-3 items-end px-2">
                 <AnimatePresence initial={false}>
                     {toasts.map((t) => (
                         <motion.div

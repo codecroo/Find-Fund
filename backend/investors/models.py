@@ -17,7 +17,6 @@ class InvestmentRequest(models.Model):
     def __str__(self):
         return f"{self.investor} → {self.startup} ({self.amount})"
     
-    
 class SavedStartup(models.Model):
     investor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_startups")
     startup = models.ForeignKey(Startup, on_delete=models.CASCADE, related_name="saved_by")
